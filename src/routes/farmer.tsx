@@ -105,7 +105,7 @@ function FarmerDashboard() {
               <Field label="Quantity">
                 <div className="flex gap-2">
                   <Input className="rounded-xl" inputMode="numeric" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} placeholder="500" />
-                  <div className="flex overflow-hidden rounded-xl border">
+                  <div className="flex shrink-0 overflow-hidden rounded-xl border">
                     {(["kg", "ton"] as const).map((u) => (
                       <button
                         key={u}
