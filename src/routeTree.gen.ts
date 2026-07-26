@@ -9,12 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as FarmerRouteImport } from './routes/farmer'
 import { Route as DriverRouteImport } from './routes/driver'
 import { Route as DealerRouteImport } from './routes/dealer'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRoleRouteImport } from './routes/auth.$role'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FarmerRoute = FarmerRouteImport.update({
   id: '/farmer',
   path: '/farmer',
@@ -30,6 +50,16 @@ const DealerRoute = DealerRouteImport.update({
   path: '/dealer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,44 +73,116 @@ const AuthRoleRoute = AuthRoleRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
   '/dealer': typeof DealerRoute
   '/driver': typeof DriverRoute
   '/farmer': typeof FarmerRoute
+  '/feedback': typeof FeedbackRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/auth/$role': typeof AuthRoleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
   '/dealer': typeof DealerRoute
   '/driver': typeof DriverRoute
   '/farmer': typeof FarmerRoute
+  '/feedback': typeof FeedbackRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/auth/$role': typeof AuthRoleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
   '/dealer': typeof DealerRoute
   '/driver': typeof DriverRoute
   '/farmer': typeof FarmerRoute
+  '/feedback': typeof FeedbackRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/auth/$role': typeof AuthRoleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dealer' | '/driver' | '/farmer' | '/auth/$role'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/dealer'
+    | '/driver'
+    | '/farmer'
+    | '/feedback'
+    | '/privacy'
+    | '/terms'
+    | '/auth/$role'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dealer' | '/driver' | '/farmer' | '/auth/$role'
-  id: '__root__' | '/' | '/dealer' | '/driver' | '/farmer' | '/auth/$role'
+  to:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/dealer'
+    | '/driver'
+    | '/farmer'
+    | '/feedback'
+    | '/privacy'
+    | '/terms'
+    | '/auth/$role'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/dealer'
+    | '/driver'
+    | '/farmer'
+    | '/feedback'
+    | '/privacy'
+    | '/terms'
+    | '/auth/$role'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  ContactRoute: typeof ContactRoute
   DealerRoute: typeof DealerRoute
   DriverRoute: typeof DriverRoute
   FarmerRoute: typeof FarmerRoute
+  FeedbackRoute: typeof FeedbackRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   AuthRoleRoute: typeof AuthRoleRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/farmer': {
       id: '/farmer'
       path: '/farmer'
@@ -102,6 +204,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DealerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -121,9 +237,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  ContactRoute: ContactRoute,
   DealerRoute: DealerRoute,
   DriverRoute: DriverRoute,
   FarmerRoute: FarmerRoute,
+  FeedbackRoute: FeedbackRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   AuthRoleRoute: AuthRoleRoute,
 }
 export const routeTree = rootRouteImport
