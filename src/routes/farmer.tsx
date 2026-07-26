@@ -85,7 +85,7 @@ function FarmerDashboard() {
       </div>
 
       <Tabs defaultValue="upload">
-        <TabsList className="flex w-full flex-wrap justify-start gap-1 rounded-2xl p-1">
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-2xl p-1">
           <TabsTrigger value="upload" className="rounded-xl">Upload crop</TabsTrigger>
           <TabsTrigger value="listings" className="rounded-xl">My listings</TabsTrigger>
           <TabsTrigger value="orders" className="rounded-xl">Orders & payments</TabsTrigger>

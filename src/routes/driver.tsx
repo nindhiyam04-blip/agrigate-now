@@ -43,7 +43,7 @@ function DriverDashboard() {
       </div>
 
       <Tabs defaultValue="requests">
-        <TabsList className="flex w-full flex-wrap justify-start gap-1 rounded-2xl p-1">
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-2xl p-1">
           <TabsTrigger value="requests" className="rounded-xl">Requests</TabsTrigger>
           <TabsTrigger value="live" className="rounded-xl">Live delivery</TabsTrigger>
           <TabsTrigger value="vehicle" className="rounded-xl">Vehicle</TabsTrigger>

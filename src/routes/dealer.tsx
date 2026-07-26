@@ -59,7 +59,7 @@ function DealerDashboard() {
       </div>
 
       <Tabs defaultValue="browse">
-        <TabsList className="flex w-full flex-wrap justify-start gap-1 rounded-2xl p-1">
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-2xl p-1">
           <TabsTrigger value="browse" className="rounded-xl">Browse crops</TabsTrigger>
           <TabsTrigger value="orders" className="rounded-xl">Order history</TabsTrigger>
           <TabsTrigger value="drivers" className="rounded-xl">Book driver</TabsTrigger>
