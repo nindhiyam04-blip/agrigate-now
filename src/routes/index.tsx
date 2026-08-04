@@ -28,7 +28,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "AgriLink — Farm to Dealer Marketplace" },
       {
         property: "og:description",
-        content: "Sell your harvest at a fair price. One marketplace for farmers, dealers and drivers.",
+        content: "Farmers list crops, dealers buy in bulk and drivers deliver. Secure payments, live tracking and Tamil + English support.",
       },
     ],
   }),

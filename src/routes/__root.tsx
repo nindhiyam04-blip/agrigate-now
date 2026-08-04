@@ -85,17 +85,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "AgriLink connects farmers, dealers and drivers: crop listings, secure payments and transport in one marketplace.",
+          "Farmers list crops, dealers buy in bulk and drivers deliver. Secure payments, live tracking and Tamil + English support.",
       },
       { name: "author", content: "AgriLink" },
       { property: "og:title", content: "AgriLink — Farm to Dealer Marketplace" },
       {
         property: "og:description",
-        content: "Sell crops, buy produce in bulk and book transport in one trusted marketplace.",
+        content: "Farmers list crops, dealers buy in bulk and drivers deliver. Secure payments, live tracking and Tamil + English support.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "AgriLink — Farm to Dealer Marketplace" },
+      { name: "twitter:description", content: "Farmers list crops, dealers buy in bulk and drivers deliver. Secure payments, live tracking and Tamil + English support." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a516cc35-bece-44a0-8264-450756004a3f/id-preview-b24a1ba8--920f2056-83c5-4068-a536-1378bc7b4702.lovable.app-1785841430147.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a516cc35-bece-44a0-8264-450756004a3f/id-preview-b24a1ba8--920f2056-83c5-4068-a536-1378bc7b4702.lovable.app-1785841430147.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
