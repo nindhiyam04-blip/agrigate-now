@@ -396,6 +396,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       else if (active) setAuthLoading(false);
     });
 
+    // Safety net: never leave the UI stuck on "Checking your session…".
+    const fallback = setTimeout(() => {
+      if (active) setAuthLoading(false);
+    }, 2500);
+
+
     return () => {
       active = false;
       sub.subscription.unsubscribe();
