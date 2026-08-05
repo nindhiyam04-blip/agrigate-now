@@ -365,7 +365,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Real session: listen first, then read the current session.
   useEffect(() => {
+    console.log("[auth] effect start");
     let active = true;
+
 
     const load = (authUser: Parameters<typeof resolveSessionUser>[0]) => {
       void resolveSessionUser(authUser)
