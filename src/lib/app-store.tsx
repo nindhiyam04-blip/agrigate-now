@@ -18,6 +18,7 @@ export type Role = "farmer" | "dealer" | "driver";
 export type Lang = "en" | "ta";
 
 export interface SessionUser {
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -25,6 +26,7 @@ export interface SessionUser {
   location: string;
   avatar: string;
 }
+
 
 export interface Crop {
   id: string;
