@@ -17,6 +17,8 @@ import heroImg from "@/assets/hero-farm.jpg";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui-kit";
 import { roleMeta, useApp } from "@/lib/app-store";
+import { POST_AUTH_KEY } from "@/lib/auth";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
