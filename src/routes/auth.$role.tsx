@@ -1,16 +1,19 @@
-/** Role-specific login page: Google, mobile OTP (UI) and create account. */
+/** Role-specific login page: Google sign-in, email sign-in and create account. */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, BadgeIndianRupee, Smartphone, Sprout, Truck } from "lucide-react";
+import { ArrowLeft, BadgeIndianRupee, Loader2, Sprout, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Field, GlassCard } from "@/components/ui-kit";
 import { roleMeta, useApp, type Role } from "@/lib/app-store";
+import { lovable } from "@/integrations/lovable/index";
+import { rememberRole, signInWithEmail, signUpWithEmail } from "@/lib/auth";
 
 const roles: Role[] = ["farmer", "dealer", "driver"];
 const roleIcons = { farmer: Sprout, dealer: BadgeIndianRupee, driver: Truck } as const;
+
 
 export const Route = createFileRoute("/auth/$role")({
   head: ({ params }) => {
