@@ -485,7 +485,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       pushNotification,
       markAllRead: () => setNotifications((prev) => prev.map((n) => ({ ...n, read: true }))),
     }),
-    [user, lang, t, dark, crops, orders, requests, notifications, pushNotification],
+    [user, authLoading, lang, t, dark, crops, orders, requests, notifications, pushNotification],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
