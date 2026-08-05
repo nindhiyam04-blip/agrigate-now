@@ -1,5 +1,7 @@
 /** Home page: agricultural hero, portal chooser and feature highlights. */
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+
 import {
   BadgeIndianRupee,
   CloudSun,
@@ -15,6 +17,8 @@ import heroImg from "@/assets/hero-farm.jpg";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui-kit";
 import { roleMeta, useApp } from "@/lib/app-store";
+import { POST_AUTH_KEY } from "@/lib/auth";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -38,7 +42,22 @@ export const Route = createFileRoute("/")({
 const roleIcons = { farmer: Sprout, dealer: BadgeIndianRupee, driver: Truck } as const;
 
 function Home() {
-  const { t, lang, crops } = useApp();
+  const { t, lang, crops, user } = useApp();
+  const navigate = useNavigate();
+
+  // Land on the right portal after a Google redirect sign-in.
+  useEffect(() => {
+    if (!user) return;
+    let pending = false;
+    try {
+      pending = sessionStorage.getItem(POST_AUTH_KEY) === "1";
+      if (pending) sessionStorage.removeItem(POST_AUTH_KEY);
+    } catch {
+      /* storage unavailable */
+    }
+    if (pending) navigate({ to: `/${user.role}`, replace: true });
+  }, [user, navigate]);
+
 
   return (
     <div className="px-3 pt-4">

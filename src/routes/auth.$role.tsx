@@ -1,16 +1,19 @@
-/** Role-specific login page: Google, mobile OTP (UI) and create account. */
+/** Role-specific login page: Google sign-in, email sign-in and create account. */
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, BadgeIndianRupee, Smartphone, Sprout, Truck } from "lucide-react";
+import { ArrowLeft, BadgeIndianRupee, Loader2, Sprout, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Field, GlassCard } from "@/components/ui-kit";
 import { roleMeta, useApp, type Role } from "@/lib/app-store";
+import { lovable } from "@/integrations/lovable/index";
+import { rememberRole, signInWithEmail, signUpWithEmail } from "@/lib/auth";
 
 const roles: Role[] = ["farmer", "dealer", "driver"];
 const roleIcons = { farmer: Sprout, dealer: BadgeIndianRupee, driver: Truck } as const;
+
 
 export const Route = createFileRoute("/auth/$role")({
   head: ({ params }) => {
@@ -30,19 +33,76 @@ export const Route = createFileRoute("/auth/$role")({
 function AuthPage() {
   const { role } = Route.useParams();
   const activeRole = (roles.includes(role as Role) ? role : "farmer") as Role;
-  const { login, pushNotification } = useApp();
+  const { user, authLoading, pushNotification } = useApp();
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const enter = (method: string) => {
-    login(activeRole, name);
-    pushNotification("Signed in", `Welcome to the ${roleMeta[activeRole].label} portal via ${method}.`);
-    toast.success(`Signed in as ${roleMeta[activeRole].label}`);
-    navigate({ to: `/${activeRole}` });
+  // Already signed in (including after a Google redirect) → go to the portal.
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate({ to: `/${user.role}`, replace: true });
+    }
+  }, [authLoading, user, navigate]);
+
+  const google = async () => {
+    rememberRole(activeRole);
+    setBusy(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      setBusy(false);
+      toast.error(result.error.message ?? "Google sign-in failed");
+      return;
+    }
+    if (result.redirected) return;
+    pushNotification("Signed in", `Welcome to the ${roleMeta[activeRole].label} portal.`);
+  };
+
+  const emailSignIn = async () => {
+    if (!email || !password) return toast.error("Enter your email and password");
+    rememberRole(activeRole);
+    setBusy(true);
+    try {
+      await signInWithEmail(email, password);
+      toast.success("Signed in");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Sign-in failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const createAccount = async () => {
+    if (!name.trim() || !email || password.length < 6) {
+      return toast.error("Name, email and a 6+ character password are required");
+    }
+    rememberRole(activeRole);
+    setBusy(true);
+    try {
+      const { needsConfirmation } = await signUpWithEmail({
+        email,
+        password,
+        fullName: name.trim(),
+        role: activeRole,
+      });
+      if (needsConfirmation) {
+        toast.success("Check your email to confirm your account, then sign in.");
+      } else {
+        toast.success(`Welcome to the ${roleMeta[activeRole].label} portal`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not create the account");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const Icon = roleIcons[activeRole];
+
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8 px-5 pt-10 lg:flex-row lg:items-center">
@@ -80,14 +140,17 @@ function AuthPage() {
           </span>
           <div>
             <p className="font-semibold">Sign in to continue</p>
-            <p className="text-xs text-muted-foreground">Demo mode — no real credentials needed</p>
+            <p className="text-xs text-muted-foreground">
+              Your {roleMeta[activeRole].label.toLowerCase()} account is created on first sign-in
+            </p>
           </div>
         </div>
 
         <Button
           variant="secondary"
           className="w-full justify-center gap-3 rounded-full py-6 text-sm font-semibold"
-          onClick={() => enter("Google")}
+          disabled={busy}
+          onClick={() => void google()}
         >
           <GoogleMark /> Continue with Google
         </Button>
@@ -96,30 +159,41 @@ function AuthPage() {
           <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
         </div>
 
-        <Tabs defaultValue="otp">
+        <Tabs defaultValue="signin">
           <TabsList className="grid w-full grid-cols-2 rounded-full">
-            <TabsTrigger value="otp" className="rounded-full">
-              Mobile OTP
+            <TabsTrigger value="signin" className="rounded-full">
+              Sign in
             </TabsTrigger>
             <TabsTrigger value="create" className="rounded-full">
               Create account
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="otp" className="mt-4 space-y-3">
-            <Field label="Mobile number">
-              <Input placeholder="+91 98400 00000" inputMode="tel" className="rounded-xl" />
+          <TabsContent value="signin" className="mt-4 space-y-3">
+            <Field label="Email">
+              <Input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                placeholder="you@example.com"
+                className="rounded-xl"
+              />
             </Field>
-            {otpSent && (
-              <Field label="Enter 6-digit OTP">
-                <Input placeholder="• • • • • •" inputMode="numeric" className="rounded-xl tracking-[0.5em]" />
-              </Field>
-            )}
+            <Field label="Password">
+              <Input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                placeholder="••••••••"
+                className="rounded-xl"
+              />
+            </Field>
             <Button
               className="w-full rounded-full gradient-primary text-primary-foreground"
-              onClick={() => (otpSent ? enter("mobile OTP") : (setOtpSent(true), toast("OTP sent (demo: 123456)")))}
+              disabled={busy}
+              onClick={() => void emailSignIn()}
             >
-              <Smartphone className="size-4" /> {otpSent ? "Verify & continue" : "Send OTP"}
+              {busy && <Loader2 className="size-4 animate-spin" />} Sign in
             </Button>
           </TabsContent>
 
@@ -132,20 +206,35 @@ function AuthPage() {
                 className="rounded-xl"
               />
             </Field>
-            <Field label="Mobile number">
-              <Input placeholder="+91 98400 00000" inputMode="tel" className="rounded-xl" />
+            <Field label="Email">
+              <Input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                placeholder="you@example.com"
+                className="rounded-xl"
+              />
             </Field>
-            <Field label="District">
-              <Input placeholder="Thanjavur" className="rounded-xl" />
+            <Field label="Password">
+              <Input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                placeholder="At least 6 characters"
+                className="rounded-xl"
+              />
             </Field>
             <Button
               className="w-full rounded-full gradient-primary text-primary-foreground"
-              onClick={() => enter("new account")}
+              disabled={busy}
+              onClick={() => void createAccount()}
             >
-              Create {roleMeta[activeRole].label} account
+              {busy && <Loader2 className="size-4 animate-spin" />} Create{" "}
+              {roleMeta[activeRole].label} account
             </Button>
           </TabsContent>
         </Tabs>
+
 
         <p className="mt-5 text-center text-xs text-muted-foreground">
           By continuing you agree to our{" "}
