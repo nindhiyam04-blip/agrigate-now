@@ -140,14 +140,17 @@ function AuthPage() {
           </span>
           <div>
             <p className="font-semibold">Sign in to continue</p>
-            <p className="text-xs text-muted-foreground">Demo mode — no real credentials needed</p>
+            <p className="text-xs text-muted-foreground">
+              Your {roleMeta[activeRole].label.toLowerCase()} account is created on first sign-in
+            </p>
           </div>
         </div>
 
         <Button
           variant="secondary"
           className="w-full justify-center gap-3 rounded-full py-6 text-sm font-semibold"
-          onClick={() => enter("Google")}
+          disabled={busy}
+          onClick={() => void google()}
         >
           <GoogleMark /> Continue with Google
         </Button>
@@ -156,30 +159,41 @@ function AuthPage() {
           <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
         </div>
 
-        <Tabs defaultValue="otp">
+        <Tabs defaultValue="signin">
           <TabsList className="grid w-full grid-cols-2 rounded-full">
-            <TabsTrigger value="otp" className="rounded-full">
-              Mobile OTP
+            <TabsTrigger value="signin" className="rounded-full">
+              Sign in
             </TabsTrigger>
             <TabsTrigger value="create" className="rounded-full">
               Create account
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="otp" className="mt-4 space-y-3">
-            <Field label="Mobile number">
-              <Input placeholder="+91 98400 00000" inputMode="tel" className="rounded-xl" />
+          <TabsContent value="signin" className="mt-4 space-y-3">
+            <Field label="Email">
+              <Input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                placeholder="you@example.com"
+                className="rounded-xl"
+              />
             </Field>
-            {otpSent && (
-              <Field label="Enter 6-digit OTP">
-                <Input placeholder="• • • • • •" inputMode="numeric" className="rounded-xl tracking-[0.5em]" />
-              </Field>
-            )}
+            <Field label="Password">
+              <Input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                placeholder="••••••••"
+                className="rounded-xl"
+              />
+            </Field>
             <Button
               className="w-full rounded-full gradient-primary text-primary-foreground"
-              onClick={() => (otpSent ? enter("mobile OTP") : (setOtpSent(true), toast("OTP sent (demo: 123456)")))}
+              disabled={busy}
+              onClick={() => void emailSignIn()}
             >
-              <Smartphone className="size-4" /> {otpSent ? "Verify & continue" : "Send OTP"}
+              {busy && <Loader2 className="size-4 animate-spin" />} Sign in
             </Button>
           </TabsContent>
 
@@ -192,20 +206,35 @@ function AuthPage() {
                 className="rounded-xl"
               />
             </Field>
-            <Field label="Mobile number">
-              <Input placeholder="+91 98400 00000" inputMode="tel" className="rounded-xl" />
+            <Field label="Email">
+              <Input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                placeholder="you@example.com"
+                className="rounded-xl"
+              />
             </Field>
-            <Field label="District">
-              <Input placeholder="Thanjavur" className="rounded-xl" />
+            <Field label="Password">
+              <Input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                placeholder="At least 6 characters"
+                className="rounded-xl"
+              />
             </Field>
             <Button
               className="w-full rounded-full gradient-primary text-primary-foreground"
-              onClick={() => enter("new account")}
+              disabled={busy}
+              onClick={() => void createAccount()}
             >
-              Create {roleMeta[activeRole].label} account
+              {busy && <Loader2 className="size-4 animate-spin" />} Create{" "}
+              {roleMeta[activeRole].label} account
             </Button>
           </TabsContent>
         </Tabs>
+
 
         <p className="mt-5 text-center text-xs text-muted-foreground">
           By continuing you agree to our{" "}
