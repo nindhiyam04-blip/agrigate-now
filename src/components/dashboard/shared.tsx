@@ -31,10 +31,9 @@ export function SignInGate({ role }: { role: Role }) {
         </p>
         <Button asChild className="mt-6 w-full rounded-full gradient-primary text-primary-foreground">
           {wrongRole ? (
-            <Link to="/$role" params={{ role: user.role }}>
-              Go to {roleMeta[user.role].label} dashboard
-            </Link>
+            <Link to={`/${user.role}`}>Go to {roleMeta[user.role].label} dashboard</Link>
           ) : (
+
             <Link to="/auth/$role" params={{ role }}>
               Go to login
             </Link>
