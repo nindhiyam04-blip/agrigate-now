@@ -336,6 +336,7 @@ const STORAGE_KEY = "agrilink-state-v1";
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [lang, setLang] = useState<Lang>("en");
   const [dark, setDark] = useState(false);
   const [crops, setCrops] = useState<Crop[]>(seedCrops);
@@ -349,7 +350,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const parsed = JSON.parse(raw);
-      if (parsed.user) setUser(parsed.user);
       if (parsed.lang) setLang(parsed.lang);
       if (typeof parsed.dark === "boolean") setDark(parsed.dark);
       if (parsed.crops) setCrops(parsed.crops);
@@ -360,12 +360,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Real session: listen first, then read the current session.
+  useEffect(() => {
+    let active = true;
+
+    const load = (authUser: Parameters<typeof resolveSessionUser>[0]) => {
+      void resolveSessionUser(authUser)
+        .then((u) => {
+          if (active) setUser(u);
+        })
+        .catch(() => {
+          if (active) setUser(null);
+        })
+        .finally(() => {
+          if (active) setAuthLoading(false);
+        });
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        setUser(null);
+        setAuthLoading(false);
+        return;
+      }
+      setTimeout(() => load(session.user), 0);
+    });
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) load(data.session.user);
+      else if (active) setAuthLoading(false);
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ user, lang, dark, crops, orders, requests }),
+      JSON.stringify({ lang, dark, crops, orders, requests }),
     );
-  }, [user, lang, dark, crops, orders, requests]);
+  }, [lang, dark, crops, orders, requests]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -383,17 +420,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppState>(
     () => ({
       user,
-      login: (role, name) =>
-        setUser({
-          name: name?.trim() || defaultNames[role],
-          email: `${role}@agrilink.demo`,
-          phone: "+91 98400 11223",
-          role,
-          location: "Thanjavur, Tamil Nadu",
-          avatar: defaultNames[role].slice(0, 2).toUpperCase(),
-        }),
-      logout: () => setUser(null),
-      updateProfile: (patch) => setUser((u) => (u ? { ...u, ...patch } : u)),
+      authLoading,
+      logout: async () => {
+        try {
+          localStorage.removeItem(PENDING_ROLE_KEY);
+        } catch {
+          /* ignore */
+        }
+        await supabase.auth.signOut();
+        setUser(null);
+      },
+      updateProfile: async (patch) => {
+        setUser((u) => (u ? { ...u, ...patch } : u));
+        if (!user) return;
+        await supabase
+          .from("profiles")
+          .update({
+            full_name: patch.name ?? user.name,
+            phone: patch.phone ?? user.phone,
+            location: patch.location ?? user.location,
+          })
+          .eq("id", user.id);
+      },
+
       lang,
       setLang,
       t,
