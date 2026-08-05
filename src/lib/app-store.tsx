@@ -400,12 +400,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const fallback = setTimeout(() => {
       if (active) setAuthLoading(false);
     }, 2500);
-
-
     return () => {
       active = false;
+      clearTimeout(fallback);
       sub.subscription.unsubscribe();
     };
+
   }, []);
 
   useEffect(() => {
