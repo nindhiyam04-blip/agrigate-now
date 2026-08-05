@@ -33,19 +33,76 @@ export const Route = createFileRoute("/auth/$role")({
 function AuthPage() {
   const { role } = Route.useParams();
   const activeRole = (roles.includes(role as Role) ? role : "farmer") as Role;
-  const { login, pushNotification } = useApp();
+  const { user, authLoading, pushNotification } = useApp();
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const enter = (method: string) => {
-    login(activeRole, name);
-    pushNotification("Signed in", `Welcome to the ${roleMeta[activeRole].label} portal via ${method}.`);
-    toast.success(`Signed in as ${roleMeta[activeRole].label}`);
-    navigate({ to: `/${activeRole}` });
+  // Already signed in (including after a Google redirect) → go to the portal.
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate({ to: `/${user.role}`, replace: true });
+    }
+  }, [authLoading, user, navigate]);
+
+  const google = async () => {
+    rememberRole(activeRole);
+    setBusy(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      setBusy(false);
+      toast.error(result.error.message ?? "Google sign-in failed");
+      return;
+    }
+    if (result.redirected) return;
+    pushNotification("Signed in", `Welcome to the ${roleMeta[activeRole].label} portal.`);
+  };
+
+  const emailSignIn = async () => {
+    if (!email || !password) return toast.error("Enter your email and password");
+    rememberRole(activeRole);
+    setBusy(true);
+    try {
+      await signInWithEmail(email, password);
+      toast.success("Signed in");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Sign-in failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const createAccount = async () => {
+    if (!name.trim() || !email || password.length < 6) {
+      return toast.error("Name, email and a 6+ character password are required");
+    }
+    rememberRole(activeRole);
+    setBusy(true);
+    try {
+      const { needsConfirmation } = await signUpWithEmail({
+        email,
+        password,
+        fullName: name.trim(),
+        role: activeRole,
+      });
+      if (needsConfirmation) {
+        toast.success("Check your email to confirm your account, then sign in.");
+      } else {
+        toast.success(`Welcome to the ${roleMeta[activeRole].label} portal`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not create the account");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const Icon = roleIcons[activeRole];
+
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8 px-5 pt-10 lg:flex-row lg:items-center">
