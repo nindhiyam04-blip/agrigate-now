@@ -8,22 +8,43 @@ import { Field, GlassCard, Stars } from "@/components/ui-kit";
 import { roleMeta, useApp, type Role } from "@/lib/app-store";
 
 export function SignInGate({ role }: { role: Role }) {
+  const { user, authLoading } = useApp();
+
+  if (authLoading) {
+    return (
+      <div className="mx-auto max-w-md px-5 pt-24 text-center text-sm text-muted-foreground">
+        Checking your session…
+      </div>
+    );
+  }
+
+  const wrongRole = user && user.role !== role;
+
   return (
     <div className="mx-auto max-w-md px-5 pt-20 text-center">
       <GlassCard className="rounded-3xl p-8">
         <h1 className="text-2xl font-bold">{roleMeta[role].label} dashboard</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in to the {roleMeta[role].label.toLowerCase()} portal to continue.
+          {wrongRole
+            ? `You are signed in as a ${roleMeta[user.role].label.toLowerCase()}. Open your own portal to continue.`
+            : `Sign in to the ${roleMeta[role].label.toLowerCase()} portal to continue.`}
         </p>
         <Button asChild className="mt-6 w-full rounded-full gradient-primary text-primary-foreground">
-          <Link to="/auth/$role" params={{ role }}>
-            Go to login
-          </Link>
+          {wrongRole ? (
+            <Link to="/$role" params={{ role: user.role }}>
+              Go to {roleMeta[user.role].label} dashboard
+            </Link>
+          ) : (
+            <Link to="/auth/$role" params={{ role }}>
+              Go to login
+            </Link>
+          )}
         </Button>
       </GlassCard>
     </div>
   );
 }
+
 
 export function DashboardHeader({ subtitle }: { subtitle: string }) {
   const { user } = useApp();
