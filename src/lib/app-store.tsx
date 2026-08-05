@@ -309,9 +309,10 @@ const dict: Record<string, { en: string; ta: string }> = {
 
 interface AppState {
   user: SessionUser | null;
-  login: (role: Role, name?: string) => void;
-  logout: () => void;
-  updateProfile: (patch: Partial<SessionUser>) => void;
+  authLoading: boolean;
+  logout: () => Promise<void>;
+  updateProfile: (patch: Partial<SessionUser>) => Promise<void>;
+
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (key: string) => string;
