@@ -42,7 +42,22 @@ export const Route = createFileRoute("/")({
 const roleIcons = { farmer: Sprout, dealer: BadgeIndianRupee, driver: Truck } as const;
 
 function Home() {
-  const { t, lang, crops } = useApp();
+  const { t, lang, crops, user } = useApp();
+  const navigate = useNavigate();
+
+  // Land on the right portal after a Google redirect sign-in.
+  useEffect(() => {
+    if (!user) return;
+    let pending = false;
+    try {
+      pending = sessionStorage.getItem(POST_AUTH_KEY) === "1";
+      if (pending) sessionStorage.removeItem(POST_AUTH_KEY);
+    } catch {
+      /* storage unavailable */
+    }
+    if (pending) navigate({ to: `/${user.role}`, replace: true });
+  }, [user, navigate]);
+
 
   return (
     <div className="px-3 pt-4">
