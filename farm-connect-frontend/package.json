@@ -4,14 +4,12 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "npm --prefix ./farm-connect-frontend run dev",
-    "dev:backend": "npm --prefix ./farm-connect-backend run dev",
-    "build": "npm --prefix ./farm-connect-frontend run build",
-    "build:backend": "npm --prefix ./farm-connect-backend run build",
-    "preview": "npm --prefix ./farm-connect-frontend run preview",
-    "build:dev": "npm --prefix ./farm-connect-frontend run build:dev",
-    "lint": "npm --prefix ./farm-connect-frontend run lint",
-    "format": "npm --prefix ./farm-connect-frontend run format"
+    "dev": "vite dev",
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
