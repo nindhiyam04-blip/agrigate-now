@@ -146,20 +146,8 @@ function AuthPage() {
           </div>
         </div>
 
-        <Button
-          variant="secondary"
-          className="w-full justify-center gap-3 rounded-full py-6 text-sm font-semibold"
-          disabled={busy}
-          onClick={() => void google()}
-        >
-          <GoogleMark /> Continue with Google
-        </Button>
-
-        <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
-        </div>
-
         <Tabs defaultValue="signin">
+
           <TabsList className="grid w-full grid-cols-2 rounded-full">
             <TabsTrigger value="signin" className="rounded-full">
               Sign in
