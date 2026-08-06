@@ -40,27 +40,14 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Already signed in (including after a Google redirect) → go to the portal.
+  // Already signed in → go to the portal.
   useEffect(() => {
     if (!authLoading && user) {
       navigate({ to: `/${user.role}`, replace: true });
     }
   }, [authLoading, user, navigate]);
 
-  const google = async () => {
-    rememberRole(activeRole);
-    setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      setBusy(false);
-      toast.error(result.error.message ?? "Google sign-in failed");
-      return;
-    }
-    if (result.redirected) return;
-    pushNotification("Signed in", `Welcome to the ${roleMeta[activeRole].label} portal.`);
-  };
+
 
   const emailSignIn = async () => {
     if (!email || !password) return toast.error("Enter your email and password");
