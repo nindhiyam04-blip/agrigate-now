@@ -89,8 +89,24 @@ export async function resolveSessionUser(authUser: User): Promise<SessionUser | 
 }
 
 export async function signInWithEmail(email: string, password: string) {
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw error;
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  });
+  if (error) {
+    if (error.message.toLowerCase().includes("invalid login credentials")) {
+      throw new Error("Incorrect email or password.");
+    }
+    if (error.message.toLowerCase().includes("email not confirmed")) {
+      throw new Error("Confirm your email first — check your inbox for the link.");
+    }
+    throw error;
+  }
+  // Never treat a missing session as a successful sign-in.
+  if (!data.session || !data.user) {
+    throw new Error("Sign-in failed — please try again.");
+  }
+  return data.session;
 }
 
 export async function signUpWithEmail(opts: {
