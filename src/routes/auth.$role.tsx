@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Field, GlassCard } from "@/components/ui-kit";
 import { roleMeta, useApp, type Role } from "@/lib/app-store";
-import { lovable } from "@/integrations/lovable/index";
 import { rememberRole, signInWithEmail, signUpWithEmail } from "@/lib/auth";
 
 const roles: Role[] = ["farmer", "dealer", "driver"];
@@ -33,34 +32,21 @@ export const Route = createFileRoute("/auth/$role")({
 function AuthPage() {
   const { role } = Route.useParams();
   const activeRole = (roles.includes(role as Role) ? role : "farmer") as Role;
-  const { user, authLoading, pushNotification } = useApp();
+  const { user, authLoading } = useApp();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Already signed in (including after a Google redirect) → go to the portal.
+  // Already signed in → go to the portal.
   useEffect(() => {
     if (!authLoading && user) {
       navigate({ to: `/${user.role}`, replace: true });
     }
   }, [authLoading, user, navigate]);
 
-  const google = async () => {
-    rememberRole(activeRole);
-    setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      setBusy(false);
-      toast.error(result.error.message ?? "Google sign-in failed");
-      return;
-    }
-    if (result.redirected) return;
-    pushNotification("Signed in", `Welcome to the ${roleMeta[activeRole].label} portal.`);
-  };
+
 
   const emailSignIn = async () => {
     if (!email || !password) return toast.error("Enter your email and password");
@@ -146,20 +132,8 @@ function AuthPage() {
           </div>
         </div>
 
-        <Button
-          variant="secondary"
-          className="w-full justify-center gap-3 rounded-full py-6 text-sm font-semibold"
-          disabled={busy}
-          onClick={() => void google()}
-        >
-          <GoogleMark /> Continue with Google
-        </Button>
-
-        <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
-        </div>
-
         <Tabs defaultValue="signin">
+
           <TabsList className="grid w-full grid-cols-2 rounded-full">
             <TabsTrigger value="signin" className="rounded-full">
               Sign in
@@ -252,13 +226,3 @@ function AuthPage() {
   );
 }
 
-function GoogleMark() {
-  return (
-    <svg viewBox="0 0 48 48" className="size-5" aria-hidden>
-      <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2.5 24 .5 14.6.5 6.5 5.9 2.6 13.8l7.8 6.1C12.3 13.9 17.6 9.5 24 9.5z" />
-      <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.2-.4-4.7H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17.3z" />
-      <path fill="#FBBC05" d="M10.4 28.1a14.6 14.6 0 010-9.2l-7.8-6.1a23.5 23.5 0 000 21.4l7.8-6.1z" />
-      <path fill="#34A853" d="M24 47.5c6.2 0 11.5-2 15.4-5.5l-7.5-5.8c-2.1 1.4-4.8 2.3-7.9 2.3-6.4 0-11.7-4.4-13.6-10.4l-7.8 6.1C6.5 42.1 14.6 47.5 24 47.5z" />
-    </svg>
-  );
-}
