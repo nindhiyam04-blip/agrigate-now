@@ -116,13 +116,26 @@ export async function signUpWithEmail(opts: {
   role: Role;
 }) {
   const { data, error } = await supabase.auth.signUp({
-    email: opts.email,
+    email: opts.email.trim().toLowerCase(),
     password: opts.password,
     options: {
       emailRedirectTo: `${window.location.origin}/auth/${opts.role}`,
       data: { full_name: opts.fullName, role: opts.role },
     },
   });
-  if (error) throw error;
+  if (error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("weak") || msg.includes("pwned")) {
+      throw new Error("That password is too common — pick a stronger, unique one.");
+    }
+    if (msg.includes("already registered") || msg.includes("already been registered")) {
+      throw new Error("An account with this email already exists — sign in instead.");
+    }
+    if (msg.includes("invalid") && msg.includes("email")) {
+      throw new Error("Enter a valid email address.");
+    }
+    throw error;
+  }
   return { needsConfirmation: !data.session };
 }
+
