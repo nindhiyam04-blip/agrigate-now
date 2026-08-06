@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Field, GlassCard } from "@/components/ui-kit";
 import { roleMeta, useApp, type Role } from "@/lib/app-store";
-import { lovable } from "@/integrations/lovable/index";
 import { rememberRole, signInWithEmail, signUpWithEmail } from "@/lib/auth";
 
 const roles: Role[] = ["farmer", "dealer", "driver"];
