@@ -32,7 +32,7 @@ export const Route = createFileRoute("/auth/$role")({
 function AuthPage() {
   const { role } = Route.useParams();
   const activeRole = (roles.includes(role as Role) ? role : "farmer") as Role;
-  const { user, authLoading, pushNotification } = useApp();
+  const { user, authLoading } = useApp();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
