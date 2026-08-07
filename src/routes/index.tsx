@@ -28,7 +28,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "AgriLink — Farm to Dealer Marketplace" },
       {
         property: "og:description",
-        content: "Sell your harvest at a fair price. One marketplace for farmers, dealers and drivers.",
+        content:
+          "Sell your harvest at a fair price. One marketplace for farmers, dealers and drivers.",
       },
     ],
   }),
@@ -167,13 +168,49 @@ function Home() {
 }
 
 const features = [
-  { icon: Sprout, title: "Crop listings", body: "Upload produce with photos, quantity, harvest date and price per kg or ton." },
-  { icon: Truck, title: "Transport built in", body: "Request a driver from the listing; drivers accept and share live status." },
-  { icon: ShieldCheck, title: "Secure payments", body: "Escrow-style payment flow with clear paid / pending states for every order." },
-  { icon: CloudSun, title: "AI weather alerts", body: "Field-level rain and heat warnings before your harvest window." },
-  { icon: MapPinned, title: "Location filters", body: "Dealers filter by crop, price, quantity and district in one search bar." },
-  { icon: Languages, title: "Tamil + English", body: "Switch language anytime from the menu — the whole app follows." },
-  { icon: Star, title: "Ratings & reviews", body: "Every farmer, dealer and driver carries a public trust score." },
-  { icon: Users, title: "Direct contact", body: "Call or chat between farmer, dealer and driver without middlemen." },
-  { icon: BadgeIndianRupee, title: "Price prediction", body: "Upcoming: mandi price forecasts so you sell on the best day." },
+  {
+    icon: Sprout,
+    title: "Crop listings",
+    body: "Upload produce with photos, quantity, harvest date and price per kg or ton.",
+  },
+  {
+    icon: Truck,
+    title: "Transport built in",
+    body: "Request a driver from the listing; drivers accept and share live status.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Secure payments",
+    body: "Escrow-style payment flow with clear paid / pending states for every order.",
+  },
+  {
+    icon: CloudSun,
+    title: "AI weather alerts",
+    body: "Field-level rain and heat warnings before your harvest window.",
+  },
+  {
+    icon: MapPinned,
+    title: "Location filters",
+    body: "Dealers filter by crop, price, quantity and district in one search bar.",
+  },
+  {
+    icon: Languages,
+    title: "Tamil + English",
+    body: "Switch language anytime from the menu — the whole app follows.",
+  },
+  {
+    icon: Star,
+    title: "Ratings & reviews",
+    body: "Every farmer, dealer and driver carries a public trust score.",
+  },
+  {
+    icon: Users,
+    title: "Direct contact",
+    body: "Call or chat between farmer, dealer and driver without middlemen.",
+  },
+  {
+    icon: BadgeIndianRupee,
+    title: "Price prediction",
+    body: "Upcoming: mandi price forecasts so you sell on the best day.",
+  },
 ];

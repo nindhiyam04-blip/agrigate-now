@@ -18,7 +18,10 @@ export const Route = createFileRoute("/auth/$role")({
     return {
       meta: [
         { title: `${label} Login — AgriLink` },
-        { name: "description", content: `Sign in to the AgriLink ${label} portal with Google or mobile OTP.` },
+        {
+          name: "description",
+          content: `Sign in to the AgriLink ${label} portal with Google or mobile OTP.`,
+        },
         { property: "og:title", content: `${label} Login — AgriLink` },
         { property: "og:description", content: `Access your AgriLink ${label} dashboard.` },
       ],
@@ -37,7 +40,10 @@ function AuthPage() {
 
   const enter = (method: string) => {
     login(activeRole, name);
-    pushNotification("Signed in", `Welcome to the ${roleMeta[activeRole].label} portal via ${method}.`);
+    pushNotification(
+      "Signed in",
+      `Welcome to the ${roleMeta[activeRole].label} portal via ${method}.`,
+    );
     toast.success(`Signed in as ${roleMeta[activeRole].label}`);
     navigate({ to: `/${activeRole}` });
   };
@@ -47,7 +53,10 @@ function AuthPage() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8 px-5 pt-10 lg:flex-row lg:items-center">
       <div className="flex-1">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+        >
           <ArrowLeft className="size-4" /> Back home
         </Link>
         <h1 className="mt-5 text-4xl font-black leading-tight sm:text-5xl">
@@ -112,12 +121,18 @@ function AuthPage() {
             </Field>
             {otpSent && (
               <Field label="Enter 6-digit OTP">
-                <Input placeholder="• • • • • •" inputMode="numeric" className="rounded-xl tracking-[0.5em]" />
+                <Input
+                  placeholder="• • • • • •"
+                  inputMode="numeric"
+                  className="rounded-xl tracking-[0.5em]"
+                />
               </Field>
             )}
             <Button
               className="w-full rounded-full gradient-primary text-primary-foreground"
-              onClick={() => (otpSent ? enter("mobile OTP") : (setOtpSent(true), toast("OTP sent (demo: 123456)")))}
+              onClick={() =>
+                otpSent ? enter("mobile OTP") : (setOtpSent(true), toast("OTP sent (demo: 123456)"))
+              }
             >
               <Smartphone className="size-4" /> {otpSent ? "Verify & continue" : "Send OTP"}
             </Button>
@@ -166,10 +181,22 @@ function AuthPage() {
 function GoogleMark() {
   return (
     <svg viewBox="0 0 48 48" className="size-5" aria-hidden>
-      <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2.5 24 .5 14.6.5 6.5 5.9 2.6 13.8l7.8 6.1C12.3 13.9 17.6 9.5 24 9.5z" />
-      <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.2-.4-4.7H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17.3z" />
-      <path fill="#FBBC05" d="M10.4 28.1a14.6 14.6 0 010-9.2l-7.8-6.1a23.5 23.5 0 000 21.4l7.8-6.1z" />
-      <path fill="#34A853" d="M24 47.5c6.2 0 11.5-2 15.4-5.5l-7.5-5.8c-2.1 1.4-4.8 2.3-7.9 2.3-6.4 0-11.7-4.4-13.6-10.4l-7.8 6.1C6.5 42.1 14.6 47.5 24 47.5z" />
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2.5 24 .5 14.6.5 6.5 5.9 2.6 13.8l7.8 6.1C12.3 13.9 17.6 9.5 24 9.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.5 24.5c0-1.6-.1-3.2-.4-4.7H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17.3z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.4 28.1a14.6 14.6 0 010-9.2l-7.8-6.1a23.5 23.5 0 000 21.4l7.8-6.1z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 47.5c6.2 0 11.5-2 15.4-5.5l-7.5-5.8c-2.1 1.4-4.8 2.3-7.9 2.3-6.4 0-11.7-4.4-13.6-10.4l-7.8 6.1C6.5 42.1 14.6 47.5 24 47.5z"
+      />
     </svg>
   );
 }

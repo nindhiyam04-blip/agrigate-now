@@ -2,11 +2,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export function GlassCard({
-  className,
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+export function GlassCard({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={cn("glass lift rounded-3xl p-5", className)} {...props}>
       {children}
@@ -27,9 +23,7 @@ export function SectionTitle({
     <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
       <div className="min-w-0">
         <h2 className="truncate text-xl font-semibold sm:text-2xl">{title}</h2>
-        {subtitle ? (
-          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
-        ) : null}
+        {subtitle ? <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
@@ -93,13 +87,7 @@ export function Pill({
   );
 }
 
-export function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block space-y-1.5">
       <span className="text-sm font-medium text-foreground">{label}</span>

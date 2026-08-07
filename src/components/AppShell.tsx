@@ -20,20 +20,13 @@ import {
   Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useApp } from "@/lib/app-store";
 import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { user, logout, t, lang, setLang, dark, toggleDark, notifications, markAllRead } =
-    useApp();
+  const { user, logout, t, lang, setLang, dark, toggleDark, notifications, markAllRead } = useApp();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const unread = notifications.filter((n) => !n.read).length;
@@ -112,7 +105,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </SheetHeader>
 
                 <nav className="mt-2 flex flex-col gap-1 px-4">
-                  <MenuLink to="/" icon={Leaf} label={t("nav.home")} onNavigate={() => setOpen(false)} />
+                  <MenuLink
+                    to="/"
+                    icon={Leaf}
+                    label={t("nav.home")}
+                    onNavigate={() => setOpen(false)}
+                  />
                   {user && (
                     <MenuLink
                       to={`/${user.role}`}
@@ -148,7 +146,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <div className="mt-6 space-y-3 px-4">
                   <div className="flex items-center justify-between rounded-2xl bg-muted/60 px-3 py-2">
                     <span className="text-sm font-medium">Dark mode</span>
-                    <Button variant="secondary" size="icon" className="rounded-full" onClick={toggleDark}>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="rounded-full"
+                      onClick={toggleDark}
+                    >
                       {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
                     </Button>
                   </div>

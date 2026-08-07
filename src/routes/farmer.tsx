@@ -24,9 +24,16 @@ export const Route = createFileRoute("/farmer")({
   head: () => ({
     meta: [
       { title: "Farmer Dashboard — AgriLink" },
-      { name: "description", content: "Upload crops, track orders and payments, request transport and view weather alerts." },
+      {
+        name: "description",
+        content:
+          "Upload crops, track orders and payments, request transport and view weather alerts.",
+      },
       { property: "og:title", content: "Farmer Dashboard — AgriLink" },
-      { property: "og:description", content: "Manage your listings, orders and transport in one place." },
+      {
+        property: "og:description",
+        content: "Manage your listings, orders and transport in one place.",
+      },
     ],
   }),
   component: FarmerDashboard,
@@ -70,7 +77,15 @@ function FarmerDashboard() {
     });
     pushNotification("Crop listed", `${form.name} is now visible to dealers.`);
     toast.success("Crop listed for sale");
-    setForm({ name: "", quantity: "", unit: "kg", price: "", harvestDate: "", location: "", image: "" });
+    setForm({
+      name: "",
+      quantity: "",
+      unit: "kg",
+      price: "",
+      harvestDate: "",
+      location: "",
+      image: "",
+    });
   };
 
   return (
@@ -78,33 +93,79 @@ function FarmerDashboard() {
       <DashboardHeader subtitle="Farmer portal · Thanjavur cluster" />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Active listings" value={String(myCrops.length)} hint="visible to dealers" icon={<Sprout className="size-5" />} />
-        <StatCard label="Open orders" value={String(orders.length)} hint="this season" icon={<PackageCheck className="size-5" />} />
-        <StatCard label="Earnings" value={currency(earnings)} hint="settled payments" icon={<IndianRupee className="size-5" />} />
-        <StatCard label="Transport" value="2 active" hint="drivers assigned" icon={<Truck className="size-5" />} />
+        <StatCard
+          label="Active listings"
+          value={String(myCrops.length)}
+          hint="visible to dealers"
+          icon={<Sprout className="size-5" />}
+        />
+        <StatCard
+          label="Open orders"
+          value={String(orders.length)}
+          hint="this season"
+          icon={<PackageCheck className="size-5" />}
+        />
+        <StatCard
+          label="Earnings"
+          value={currency(earnings)}
+          hint="settled payments"
+          icon={<IndianRupee className="size-5" />}
+        />
+        <StatCard
+          label="Transport"
+          value="2 active"
+          hint="drivers assigned"
+          icon={<Truck className="size-5" />}
+        />
       </div>
 
       <Tabs defaultValue="upload">
         <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-2xl p-1">
-          <TabsTrigger value="upload" className="rounded-xl">Upload crop</TabsTrigger>
-          <TabsTrigger value="listings" className="rounded-xl">My listings</TabsTrigger>
-          <TabsTrigger value="orders" className="rounded-xl">Orders & payments</TabsTrigger>
-          <TabsTrigger value="transport" className="rounded-xl">Transport</TabsTrigger>
-          <TabsTrigger value="insights" className="rounded-xl">Weather & AI</TabsTrigger>
-          <TabsTrigger value="profile" className="rounded-xl">Profile</TabsTrigger>
+          <TabsTrigger value="upload" className="rounded-xl">
+            Upload crop
+          </TabsTrigger>
+          <TabsTrigger value="listings" className="rounded-xl">
+            My listings
+          </TabsTrigger>
+          <TabsTrigger value="orders" className="rounded-xl">
+            Orders & payments
+          </TabsTrigger>
+          <TabsTrigger value="transport" className="rounded-xl">
+            Transport
+          </TabsTrigger>
+          <TabsTrigger value="insights" className="rounded-xl">
+            Weather & AI
+          </TabsTrigger>
+          <TabsTrigger value="profile" className="rounded-xl">
+            Profile
+          </TabsTrigger>
         </TabsList>
 
         {/* Upload */}
         <TabsContent value="upload" className="mt-5">
           <GlassCard className="rounded-3xl">
-            <SectionTitle title="Upload crops for sale" subtitle="Dealers see your listing instantly." />
+            <SectionTitle
+              title="Upload crops for sale"
+              subtitle="Dealers see your listing instantly."
+            />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Field label="Crop name">
-                <Input className="rounded-xl" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Tomato" />
+                <Input
+                  className="rounded-xl"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="e.g. Tomato"
+                />
               </Field>
               <Field label="Quantity">
                 <div className="flex gap-2">
-                  <Input className="rounded-xl" inputMode="numeric" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} placeholder="500" />
+                  <Input
+                    className="rounded-xl"
+                    inputMode="numeric"
+                    value={form.quantity}
+                    onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+                    placeholder="500"
+                  />
                   <div className="flex shrink-0 overflow-hidden rounded-xl border">
                     {(["kg", "ton"] as const).map((u) => (
                       <button
@@ -119,16 +180,37 @@ function FarmerDashboard() {
                 </div>
               </Field>
               <Field label={`Price per ${form.unit} (₹)`}>
-                <Input className="rounded-xl" inputMode="decimal" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="24" />
+                <Input
+                  className="rounded-xl"
+                  inputMode="decimal"
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: e.target.value })}
+                  placeholder="24"
+                />
               </Field>
               <Field label="Harvest date">
-                <Input className="rounded-xl" type="date" value={form.harvestDate} onChange={(e) => setForm({ ...form, harvestDate: e.target.value })} />
+                <Input
+                  className="rounded-xl"
+                  type="date"
+                  value={form.harvestDate}
+                  onChange={(e) => setForm({ ...form, harvestDate: e.target.value })}
+                />
               </Field>
               <Field label="Farm location">
-                <Input className="rounded-xl" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Village, District" />
+                <Input
+                  className="rounded-xl"
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  placeholder="Village, District"
+                />
               </Field>
               <Field label="Crop image URL">
-                <Input className="rounded-xl" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="Paste image link" />
+                <Input
+                  className="rounded-xl"
+                  value={form.image}
+                  onChange={(e) => setForm({ ...form, image: e.target.value })}
+                  placeholder="Paste image link"
+                />
               </Field>
             </div>
 
@@ -149,7 +231,10 @@ function FarmerDashboard() {
               />
             </label>
 
-            <Button className="mt-5 rounded-full gradient-primary text-primary-foreground" onClick={submit}>
+            <Button
+              className="mt-5 rounded-full gradient-primary text-primary-foreground"
+              onClick={submit}
+            >
               Publish listing
             </Button>
           </GlassCard>
@@ -160,7 +245,12 @@ function FarmerDashboard() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {myCrops.map((c) => (
               <GlassCard key={c.id} className="overflow-hidden rounded-3xl p-0">
-                <img src={c.image} alt={c.name} loading="lazy" className="h-40 w-full object-cover" />
+                <img
+                  src={c.image}
+                  alt={c.name}
+                  loading="lazy"
+                  className="h-40 w-full object-cover"
+                />
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="min-w-0 truncate font-semibold">{c.name}</h3>
@@ -169,7 +259,9 @@ function FarmerDashboard() {
                   <p className="mt-1 text-sm text-muted-foreground">
                     {c.quantity} {c.unit} · {currency(c.price)}/{c.unit}
                   </p>
-                  <p className="text-xs text-muted-foreground">Harvest {c.harvestDate} · {c.location}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Harvest {c.harvestDate} · {c.location}
+                  </p>
                 </div>
               </GlassCard>
             ))}
@@ -179,26 +271,56 @@ function FarmerDashboard() {
         {/* Orders */}
         <TabsContent value="orders" className="mt-5 space-y-5">
           <GlassCard className="rounded-3xl">
-            <SectionTitle title="View orders" subtitle="Chat or call the dealer and follow payment status." />
+            <SectionTitle
+              title="View orders"
+              subtitle="Chat or call the dealer and follow payment status."
+            />
             <div className="space-y-3">
               {orders.map((o) => (
-                <div key={o.id} className="grid gap-3 rounded-2xl bg-muted/50 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                <div
+                  key={o.id}
+                  className="grid gap-3 rounded-2xl bg-muted/50 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                >
                   <div className="min-w-0">
-                    <p className="truncate font-semibold">{o.crop} · {o.quantity}</p>
-                    <p className="truncate text-sm text-muted-foreground">{o.buyer} · {o.id} · {o.date}</p>
+                    <p className="truncate font-semibold">
+                      {o.crop} · {o.quantity}
+                    </p>
+                    <p className="truncate text-sm text-muted-foreground">
+                      {o.buyer} · {o.id} · {o.date}
+                    </p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <Pill tone={o.payment === "paid" ? "success" : o.payment === "escrow" ? "sky" : "warning"}>
+                      <Pill
+                        tone={
+                          o.payment === "paid"
+                            ? "success"
+                            : o.payment === "escrow"
+                              ? "sky"
+                              : "warning"
+                        }
+                      >
                         Payment: {o.payment}
                       </Pill>
-                      <Pill tone={o.delivery === "delivered" ? "success" : "primary"}>{o.delivery}</Pill>
+                      <Pill tone={o.delivery === "delivered" ? "success" : "primary"}>
+                        {o.delivery}
+                      </Pill>
                       <Pill tone="muted">{currency(o.amount)}</Pill>
                     </div>
                   </div>
                   <div className="flex shrink-0 gap-2">
-                    <Button size="sm" variant="secondary" className="rounded-full" onClick={() => toast("Opening chat with " + o.buyer)}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="rounded-full"
+                      onClick={() => toast("Opening chat with " + o.buyer)}
+                    >
                       <MessageCircle className="size-4" /> Chat
                     </Button>
-                    <Button size="sm" variant="secondary" className="rounded-full" onClick={() => toast("Calling " + o.buyer)}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="rounded-full"
+                      onClick={() => toast("Calling " + o.buyer)}
+                    >
                       <Phone className="size-4" /> Call
                     </Button>
                   </div>
@@ -212,11 +334,17 @@ function FarmerDashboard() {
         {/* Transport */}
         <TabsContent value="transport" className="mt-5">
           <GlassCard className="rounded-3xl">
-            <SectionTitle title="Transportation request" subtitle="Post a load and nearby drivers will accept it." />
+            <SectionTitle
+              title="Transportation request"
+              subtitle="Post a load and nearby drivers will accept it."
+            />
             <TransportForm
               onSubmit={(payload) => {
                 addRequest({ ...payload, farmerPhone: user.phone, dealerPhone: "+91 90876 33221" });
-                pushNotification("Transport requested", `${payload.crop}: ${payload.from} → ${payload.to}`);
+                pushNotification(
+                  "Transport requested",
+                  `${payload.crop}: ${payload.from} → ${payload.to}`,
+                );
                 toast.success("Transport request posted");
               }}
             />
@@ -236,8 +364,8 @@ function FarmerDashboard() {
               </div>
             </div>
             <p className="mt-4 rounded-2xl bg-warning/15 p-4 text-sm">
-              Moderate showers (18 mm) expected Tuesday evening. Move harvested paddy under cover and
-              delay spraying by 48 hours.
+              Moderate showers (18 mm) expected Tuesday evening. Move harvested paddy under cover
+              and delay spraying by 48 hours.
             </p>
             <div className="mt-4 grid grid-cols-5 gap-2 text-center text-xs">
               {[
@@ -267,7 +395,8 @@ function FarmerDashboard() {
               </div>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              Forecasts from mandi history, rainfall and arrivals will tell you the best week to sell.
+              Forecasts from mandi history, rainfall and arrivals will tell you the best week to
+              sell.
             </p>
             <ul className="mt-4 space-y-2 text-sm">
               {[
@@ -275,7 +404,10 @@ function FarmerDashboard() {
                 ["Paddy", "₹28 → ₹27 /kg", "-3% in 2 weeks"],
                 ["Onion", "₹48 → ₹55 /kg", "+14% in 3 weeks"],
               ].map(([crop, range, delta]) => (
-                <li key={crop} className="flex items-center justify-between rounded-2xl bg-muted/50 px-4 py-3">
+                <li
+                  key={crop}
+                  className="flex items-center justify-between rounded-2xl bg-muted/50 px-4 py-3"
+                >
                   <span className="font-medium">{crop}</span>
                   <span className="text-muted-foreground">{range}</span>
                   <Pill tone={delta.startsWith("+") ? "success" : "warning"}>{delta}</Pill>
@@ -296,29 +428,75 @@ function FarmerDashboard() {
 export function TransportForm({
   onSubmit,
 }: {
-  onSubmit: (p: { crop: string; from: string; to: string; distanceKm: number; weight: string; payout: number }) => void;
+  onSubmit: (p: {
+    crop: string;
+    from: string;
+    to: string;
+    distanceKm: number;
+    weight: string;
+    payout: number;
+  }) => void;
 }) {
-  const [f, setF] = useState({ crop: "", from: "", to: "", distanceKm: "", weight: "", payout: "" });
+  const [f, setF] = useState({
+    crop: "",
+    from: "",
+    to: "",
+    distanceKm: "",
+    weight: "",
+    payout: "",
+  });
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Crop">
-          <Input className="rounded-xl" value={f.crop} onChange={(e) => setF({ ...f, crop: e.target.value })} placeholder="Tomato" />
+          <Input
+            className="rounded-xl"
+            value={f.crop}
+            onChange={(e) => setF({ ...f, crop: e.target.value })}
+            placeholder="Tomato"
+          />
         </Field>
         <Field label="Pickup">
-          <Input className="rounded-xl" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} placeholder="Hosur" />
+          <Input
+            className="rounded-xl"
+            value={f.from}
+            onChange={(e) => setF({ ...f, from: e.target.value })}
+            placeholder="Hosur"
+          />
         </Field>
         <Field label="Drop">
-          <Input className="rounded-xl" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} placeholder="Koyambedu" />
+          <Input
+            className="rounded-xl"
+            value={f.to}
+            onChange={(e) => setF({ ...f, to: e.target.value })}
+            placeholder="Koyambedu"
+          />
         </Field>
         <Field label="Distance (km)">
-          <Input className="rounded-xl" inputMode="numeric" value={f.distanceKm} onChange={(e) => setF({ ...f, distanceKm: e.target.value })} placeholder="120" />
+          <Input
+            className="rounded-xl"
+            inputMode="numeric"
+            value={f.distanceKm}
+            onChange={(e) => setF({ ...f, distanceKm: e.target.value })}
+            placeholder="120"
+          />
         </Field>
         <Field label="Weight">
-          <Input className="rounded-xl" value={f.weight} onChange={(e) => setF({ ...f, weight: e.target.value })} placeholder="800 kg" />
+          <Input
+            className="rounded-xl"
+            value={f.weight}
+            onChange={(e) => setF({ ...f, weight: e.target.value })}
+            placeholder="800 kg"
+          />
         </Field>
         <Field label="Offered payout (₹)">
-          <Input className="rounded-xl" inputMode="numeric" value={f.payout} onChange={(e) => setF({ ...f, payout: e.target.value })} placeholder="3500" />
+          <Input
+            className="rounded-xl"
+            inputMode="numeric"
+            value={f.payout}
+            onChange={(e) => setF({ ...f, payout: e.target.value })}
+            placeholder="3500"
+          />
         </Field>
       </div>
       <Button

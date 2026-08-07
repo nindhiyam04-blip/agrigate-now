@@ -4,6 +4,8 @@
  * orders, transport requests and notifications. No backend — this is a
  * fully interactive UI prototype persisted in localStorage.
  */
+/* eslint-disable react-refresh/only-export-components */
+
 import {
   createContext,
   useCallback,
@@ -297,7 +299,10 @@ const dict: Record<string, { en: string; ta: string }> = {
   "common.call": { en: "Call", ta: "அழை" },
   "common.chat": { en: "Chat", ta: "அரட்டை" },
   "hero.badge": { en: "Farm to Dealer Marketplace", ta: "பண்ணை முதல் வியாபாரி வரை" },
-  "hero.title": { en: "Sell your harvest at a fair price.", ta: "உங்கள் அறுவடையை நியாயமான விலைக்கு விற்கவும்." },
+  "hero.title": {
+    en: "Sell your harvest at a fair price.",
+    ta: "உங்கள் அறுவடையை நியாயமான விலைக்கு விற்கவும்.",
+  },
   "hero.subtitle": {
     en: "AgriLink connects farmers, dealers and drivers in one trusted marketplace — listings, secure payments and transport in a single flow.",
     ta: "AgriLink விவசாயிகள், வியாபாரிகள் மற்றும் ஓட்டுநர்களை ஒரே நம்பகமான சந்தையில் இணைக்கிறது.",

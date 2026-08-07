@@ -15,7 +15,10 @@ export function SignInGate({ role }: { role: Role }) {
         <p className="mt-2 text-sm text-muted-foreground">
           Sign in to the {roleMeta[role].label.toLowerCase()} portal to continue.
         </p>
-        <Button asChild className="mt-6 w-full rounded-full gradient-primary text-primary-foreground">
+        <Button
+          asChild
+          className="mt-6 w-full rounded-full gradient-primary text-primary-foreground"
+        >
           <Link to="/auth/$role" params={{ role }}>
             Go to login
           </Link>
