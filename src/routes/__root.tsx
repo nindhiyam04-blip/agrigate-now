@@ -118,7 +118,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    // Match server-injected attributes to avoid hydration mismatch warnings
+    <html lang="en" suppressHydrationWarning {...{ "data-qb-installed": "true" }}>
       <head>
         <HeadContent />
       </head>
