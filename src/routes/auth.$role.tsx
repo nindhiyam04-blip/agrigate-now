@@ -1,8 +1,5 @@
-/** Role-specific login page: Google, mobile OTP (UI) and create account. */
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "sonner";
-import { ArrowLeft, BadgeIndianRupee, Smartphone, Sprout, Truck } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, BadgeIndianRupee, Sprout, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,54 +29,20 @@ export const Route = createFileRoute("/auth/$role")({
 
 function AuthPage() {
   const { role } = Route.useParams();
-  const activeRole = (roles.includes(role as Role) ? role : "farmer") as Role;
-  const { login, pushNotification } = useApp();
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-
-  const enter = (method: string) => {
-    login(activeRole, name);
-    pushNotification(
-      "Signed in",
-      `Welcome to the ${roleMeta[activeRole].label} portal via ${method}.`,
-    );
-    toast.success(`Signed in as ${roleMeta[activeRole].label}`);
-    navigate({ to: `/${activeRole}` });
-  };
-
+  const activeRole = (roles.includes(role as Role) ? role : "farmer") as Role;
   const Icon = roleIcons[activeRole];
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8 px-5 pt-10 lg:flex-row lg:items-center">
       <div className="flex-1">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-        >
+        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
           <ArrowLeft className="size-4" /> Back home
         </Link>
         <h1 className="mt-5 text-4xl font-black leading-tight sm:text-5xl">
           {roleMeta[activeRole].label} <span className="text-gradient">Portal</span>
         </h1>
         <p className="mt-3 max-w-md text-muted-foreground">{roleMeta[activeRole].blurb}</p>
-
-        <div className="mt-7 flex flex-wrap gap-2">
-          {roles.map((r) => (
-            <Link
-              key={r}
-              to="/auth/$role"
-              params={{ role: r }}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
-                r === activeRole
-                  ? "gradient-primary text-primary-foreground shadow"
-                  : "glass-soft text-muted-foreground hover:text-primary"
-              }`}
-            >
-              {roleMeta[r].label}
-            </Link>
-          ))}
-        </div>
       </div>
 
       <GlassCard className="w-full rounded-3xl p-6 sm:p-8 lg:max-w-md">
@@ -88,91 +51,19 @@ function AuthPage() {
             <Icon className="size-5" />
           </span>
           <div>
-            <p className="font-semibold">Sign in to continue</p>
-            <p className="text-xs text-muted-foreground">Demo mode — no real credentials needed</p>
+            <p className="font-semibold">Role-specific auth is now centralized</p>
+            <p className="text-xs text-muted-foreground">Use the login or registration pages to continue.</p>
           </div>
         </div>
 
-        <Button
-          variant="secondary"
-          className="w-full justify-center gap-3 rounded-full py-6 text-sm font-semibold"
-          onClick={() => enter("Google")}
-        >
-          <GoogleMark /> Continue with Google
-        </Button>
-
-        <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-widest text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
+        <div className="grid gap-3">
+          <Button asChild className="w-full rounded-full gradient-primary text-primary-foreground">
+            <Link to="/login">Go to Login</Link>
+          </Button>
+          <Button asChild className="w-full rounded-full border border-border bg-background text-muted-foreground hover:bg-muted">
+            <Link to="/register">Create Account</Link>
+          </Button>
         </div>
-
-        <Tabs defaultValue="otp">
-          <TabsList className="grid w-full grid-cols-2 rounded-full">
-            <TabsTrigger value="otp" className="rounded-full">
-              Mobile OTP
-            </TabsTrigger>
-            <TabsTrigger value="create" className="rounded-full">
-              Create account
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="otp" className="mt-4 space-y-3">
-            <Field label="Mobile number">
-              <Input placeholder="+91 98400 00000" inputMode="tel" className="rounded-xl" />
-            </Field>
-            {otpSent && (
-              <Field label="Enter 6-digit OTP">
-                <Input
-                  placeholder="• • • • • •"
-                  inputMode="numeric"
-                  className="rounded-xl tracking-[0.5em]"
-                />
-              </Field>
-            )}
-            <Button
-              className="w-full rounded-full gradient-primary text-primary-foreground"
-              onClick={() =>
-                otpSent ? enter("mobile OTP") : (setOtpSent(true), toast("OTP sent (demo: 123456)"))
-              }
-            >
-              <Smartphone className="size-4" /> {otpSent ? "Verify & continue" : "Send OTP"}
-            </Button>
-          </TabsContent>
-
-          <TabsContent value="create" className="mt-4 space-y-3">
-            <Field label="Full name">
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                className="rounded-xl"
-              />
-            </Field>
-            <Field label="Mobile number">
-              <Input placeholder="+91 98400 00000" inputMode="tel" className="rounded-xl" />
-            </Field>
-            <Field label="District">
-              <Input placeholder="Thanjavur" className="rounded-xl" />
-            </Field>
-            <Button
-              className="w-full rounded-full gradient-primary text-primary-foreground"
-              onClick={() => enter("new account")}
-            >
-              Create {roleMeta[activeRole].label} account
-            </Button>
-          </TabsContent>
-        </Tabs>
-
-        <p className="mt-5 text-center text-xs text-muted-foreground">
-          By continuing you agree to our{" "}
-          <Link to="/terms" className="text-primary underline-offset-2 hover:underline">
-            Terms
-          </Link>{" "}
-          and{" "}
-          <Link to="/privacy" className="text-primary underline-offset-2 hover:underline">
-            Privacy Policy
-          </Link>
-          .
-        </p>
       </GlassCard>
     </div>
   );
