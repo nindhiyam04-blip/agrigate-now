@@ -1,0 +1,37 @@
+import { o as require_jsx_runtime } from "../_libs/@radix-ui/react-collection+[...].mjs";
+import { t as ContentPage } from "./ContentPage-IqTtvFf4.mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/privacy-B_Sn9W95.js
+var import_jsx_runtime = require_jsx_runtime();
+var SplitComponent = () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(ContentPage, {
+	eyebrow: "Privacy policy",
+	title: "Your data, handled carefully",
+	intro: "Last updated 26 July 2026.",
+	children: [
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
+			className: "text-foreground",
+			children: "What we collect."
+		}), " Name, mobile number, email, district, crop listings, order records, transport requests and device information needed to run the marketplace."] }),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
+			className: "text-foreground",
+			children: "How we use it."
+		}), " To match crops with dealers, assign drivers, process payments, prevent fraud, and send alerts such as weather warnings and payment updates."] }),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
+			className: "text-foreground",
+			children: "Sharing."
+		}), " Contact details are shared only between counterparties in an active order or transport request. We never sell personal data to advertisers."] }),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
+			className: "text-foreground",
+			children: "Payments."
+		}), " Card and UPI details are handled by our PCI-DSS compliant payment partner; AgriLink does not store full card numbers."] }),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
+			className: "text-foreground",
+			children: "Your rights."
+		}), " You can edit your profile at any time, request a copy of your data, or ask us to delete your account by writing to support@agrilink.in."] }),
+		/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
+			className: "text-foreground",
+			children: "Retention."
+		}), " Order and payment records are kept for seven years as required by tax law; other data is deleted within 90 days of account closure."] })
+	]
+});
+//#endregion
+export { SplitComponent as component };
