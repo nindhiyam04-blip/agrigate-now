@@ -19,7 +19,7 @@ const envSchema = z.object({
 
 const env = envSchema.parse(process.env);
 
-const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_PUBLISHABLE_KEY, {
+const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET_KEY, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
@@ -284,6 +284,8 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-app.listen(port, () => {
-  console.log(`Farm Connect backend running on http://localhost:${port}`);
+app.use((_req, res) => {
+  res.status(404).json({ error: 'Route not found' });
 });
+
+export default app;
