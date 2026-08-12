@@ -70,6 +70,7 @@ function FarmerDashboard() {
       harvestDate: form.harvestDate || new Date().toISOString().slice(0, 10),
       location: form.location || user.location,
       farmer: user.name,
+      farmerId: user.id,
       phone: user.phone,
       image:
         form.image ||

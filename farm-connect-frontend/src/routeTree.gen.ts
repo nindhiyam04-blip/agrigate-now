@@ -18,6 +18,7 @@ import { Route as FarmerRouteImport } from './routes/farmer'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthRoleRouteImport } from './routes/auth.$role'
@@ -67,6 +68,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/auth/$role': typeof AuthRoleRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/auth/$role': typeof AuthRoleRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/auth/$role': typeof AuthRoleRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/feedback'
     | '/login'
     | '/privacy'
+    | '/signup'
     | '/sitemap.xml'
     | '/terms'
     | '/auth/$role'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/feedback'
     | '/login'
     | '/privacy'
+    | '/signup'
     | '/sitemap.xml'
     | '/terms'
     | '/auth/$role'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/feedback'
     | '/login'
     | '/privacy'
+    | '/signup'
     | '/sitemap.xml'
     | '/terms'
     | '/auth/$role'
@@ -181,6 +193,7 @@ export interface RootRouteChildren {
   FeedbackRoute: typeof FeedbackRoute
   LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
+  SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   AuthRoleRoute: typeof AuthRoleRoute
@@ -251,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -285,6 +305,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeedbackRoute: FeedbackRoute,
   LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
+  SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   AuthRoleRoute: AuthRoleRoute,

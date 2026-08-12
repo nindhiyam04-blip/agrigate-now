@@ -142,6 +142,14 @@ function mapRequest(row: TransportRequestRow): TransportRequest {
   };
 }
 
+function dedupeById<T extends { id: string }>(items: T[]) {
+  const seen = new Map<string, T>();
+  for (const it of items) {
+    if (!seen.has(it.id)) seen.set(it.id, it);
+  }
+  return Array.from(seen.values());
+}
+
 export interface Crop {
   id: string;
   name: string;
@@ -568,24 +576,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
         supabase.from<TransportRequestRow>("transport_requests").select("*").order("created_at", { ascending: false }),
       ]);
 
+      const isSchemaMissing = (error: unknown) => {
+        if (!error || typeof error !== "object") return false;
+        return (
+          ("status" in error && (error as any).status === 404) ||
+          ("message" in error && typeof (error as any).message === "string" && (error as any).message.includes("schema cache"))
+        );
+      };
+
       if (cropRes.error) {
-        console.warn("Unable to load crops from Supabase:", cropRes.error.message);
+        if (isSchemaMissing(cropRes.error)) {
+          console.warn("Supabase crops table is missing; using seeded data.");
+        } else {
+          console.warn("Unable to load crops from Supabase:", cropRes.error.message);
+        }
       }
       if (orderRes.error) {
-        console.warn("Unable to load orders from Supabase:", orderRes.error.message);
+        if (isSchemaMissing(orderRes.error)) {
+          console.warn("Supabase orders table is missing; using seeded data.");
+        } else {
+          console.warn("Unable to load orders from Supabase:", orderRes.error.message);
+        }
       }
       if (requestRes.error) {
-        console.warn("Unable to load requests from Supabase:", requestRes.error.message);
+        if (isSchemaMissing(requestRes.error)) {
+          console.warn("Supabase transport_requests table is missing; using seeded data.");
+        } else {
+          console.warn("Unable to load requests from Supabase:", requestRes.error.message);
+        }
       }
 
-      setCrops(cropRes.data ? cropRes.data.map(mapCrop) : seedCrops);
-      setOrders(orderRes.data ? orderRes.data.map(mapOrder) : seedOrders);
-      setRequests(requestRes.data ? requestRes.data.map(mapRequest) : seedRequests);
+      setCrops(dedupeById(cropRes.data ? cropRes.data.map(mapCrop) : seedCrops));
+      setOrders(dedupeById(orderRes.data ? orderRes.data.map(mapOrder) : seedOrders));
+      setRequests(dedupeById(requestRes.data ? requestRes.data.map(mapRequest) : seedRequests));
     } catch (error) {
       console.warn("Failed to fetch backend app data", error);
-      setCrops(seedCrops);
-      setOrders(seedOrders);
-      setRequests(seedRequests);
+      setCrops(dedupeById(seedCrops));
+      setOrders(dedupeById(seedOrders));
+      setRequests(dedupeById(seedRequests));
     }
   }, []);
 
@@ -762,7 +790,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (error || !data) {
           throw error ?? new Error("Failed to add crop");
         }
-        setCrops((prev) => [mapCrop(data), ...prev]);
+        setCrops((prev) => dedupeById([mapCrop(data), ...prev]));
       },
       orders,
       buyCrop: async (crop) => {
@@ -784,7 +812,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (error || !data) {
           throw error ?? new Error("Failed to place order");
         }
-        setOrders((prev) => [mapOrder(data), ...prev]);
+        setOrders((prev) => dedupeById([mapOrder(data), ...prev]));
         await supabase
           .from<CropRow>("crops")
           .update({ status: "sold" })
@@ -829,7 +857,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (error || !data) {
           throw error ?? new Error("Failed to add request");
         }
-        setRequests((prev) => [mapRequest(data), ...prev]);
+        setRequests((prev) => dedupeById([mapRequest(data), ...prev]));
       },
       notifications,
       pushNotification,

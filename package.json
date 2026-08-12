@@ -1,0 +1,15 @@
+{
+  "name": "agrigate-now",
+  "private": true,
+  "scripts": {
+    "dev": "npx concurrently \"npm --prefix farm-connect-frontend run dev\" \"npm --prefix farm-connect-frontend/farm-connect-backend run dev\"",
+    "dev:frontend": "npm --prefix farm-connect-frontend run dev",
+    "dev:backend": "npm --prefix farm-connect-frontend/farm-connect-backend run dev",
+    "build": "npm --prefix farm-connect-frontend run build",
+    "preview": "npm --prefix farm-connect-frontend run preview",
+    "lint": "npm --prefix farm-connect-frontend run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
+}

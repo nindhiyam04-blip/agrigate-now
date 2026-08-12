@@ -93,10 +93,15 @@ function LoginPage() {
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 space-y-2 text-center">
           <Link to="/" className="text-sm font-medium text-primary hover:underline">
             Back to home
           </Link>
+          <div>
+            <Link to="/signup" className="text-sm font-medium text-primary hover:underline">
+              Don't have an account? Sign up
+            </Link>
+          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import { type Role, useApp } from "@/lib/app-store";
 
 export const Route = createFileRoute("/login")({
@@ -17,11 +18,13 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useApp();
+  const { login, user } = useApp();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +46,45 @@ function LoginPage() {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      navigate({ to: `/${user.role}` });
+    }
+  }, [user, navigate]);
+
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setGoogleLoading(true);
+
+    try {
+      const searchRole =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("role")
+          : null;
+      const selectedRole =
+        searchRole === "farmer" || searchRole === "dealer" || searchRole === "driver"
+          ? (searchRole as Role)
+          : undefined;
+
+      const redirectTo =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/login${selectedRole ? `?role=${selectedRole}` : ""}`
+          : undefined;
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+        },
+      });
+
+      if (error) throw error;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign-in failed");
+      setGoogleLoading(false);
     }
   };
 
@@ -93,10 +135,27 @@ function LoginPage() {
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={googleLoading}
+            onClick={handleGoogleSignIn}
+            className="w-full rounded-full text-foreground"
+          >
+            {googleLoading ? "Redirecting…" : "Continue with Google"}
+          </Button>
+        </div>
+
+        <div className="mt-6 space-y-2 text-center">
           <Link to="/" className="text-sm font-medium text-primary hover:underline">
             Back to home
           </Link>
+          <div>
+            <Link to="/signup" className="text-sm font-medium text-primary hover:underline">
+              Don't have an account? Sign up
+            </Link>
+          </div>
         </div>
       </div>
     </div>

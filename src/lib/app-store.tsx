@@ -142,6 +142,14 @@ function mapRequest(row: TransportRequestRow): TransportRequest {
   };
 }
 
+function dedupeById<T extends { id: string }>(items: T[]) {
+  const seen = new Map<string, T>();
+  for (const it of items) {
+    if (!seen.has(it.id)) seen.set(it.id, it);
+  }
+  return Array.from(seen.values());
+}
+
 export interface Crop {
   id: string;
   name: string;
@@ -310,6 +318,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-07-12",
     location: "Thanjavur, TN",
     farmer: "Murugan S.",
+    farmerId: "farmer-murugan",
     phone: "+91 98400 11223",
     rating: 4.8,
     image: CROP_IMAGES[0],
@@ -325,6 +334,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-07-20",
     location: "Hosur, TN",
     farmer: "Lakshmi R.",
+    farmerId: "farmer-lakshmi",
     phone: "+91 90031 55480",
     rating: 4.6,
     image: CROP_IMAGES[1],
@@ -340,6 +350,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-07-18",
     location: "Theni, TN",
     farmer: "Arun K.",
+    farmerId: "farmer-arun",
     phone: "+91 88254 77109",
     rating: 4.9,
     image: CROP_IMAGES[2],
@@ -355,6 +366,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-08-02",
     location: "Tiruvannamalai, TN",
     farmer: "Selvi M.",
+    farmerId: "farmer-selvi",
     phone: "+91 99529 30012",
     rating: 4.4,
     image: CROP_IMAGES[3],
@@ -370,6 +382,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-07-28",
     location: "Erode, TN",
     farmer: "Bala P.",
+    farmerId: "farmer-bala",
     phone: "+91 93441 20087",
     rating: 4.2,
     image: CROP_IMAGES[4],
@@ -385,6 +398,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-07-15",
     location: "Perambalur, TN",
     farmer: "Kavitha N.",
+    farmerId: "farmer-kavitha",
     phone: "+91 87540 66321",
     rating: 4.7,
     image: CROP_IMAGES[5],
@@ -549,6 +563,10 @@ const AppContext = createContext<AppState | null>(null);
 
 const STORAGE_KEY = "agrilink-state-v1";
 
+function getSupabaseTable(table: string) {
+  return (supabase as unknown as { from: (relation: string) => any }).from(table);
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [authLoaded, setAuthLoaded] = useState(typeof window === "undefined");
@@ -563,9 +581,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const loadAppData = useCallback(async () => {
     try {
       const [cropRes, orderRes, requestRes] = await Promise.all([
-        supabase.from<CropRow>("crops").select("*").order("created_at", { ascending: false }),
-        supabase.from<OrderRow>("orders").select("*").order("created_at", { ascending: false }),
-        supabase.from<TransportRequestRow>("transport_requests").select("*").order("created_at", { ascending: false }),
+        getSupabaseTable("crops").select("*").order("created_at", { ascending: false }),
+        getSupabaseTable("orders").select("*").order("created_at", { ascending: false }),
+        getSupabaseTable("transport_requests").select("*").order("created_at", { ascending: false }),
       ]);
 
       if (cropRes.error) {
@@ -578,14 +596,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
         console.warn("Unable to load requests from Supabase:", requestRes.error.message);
       }
 
-      setCrops(cropRes.data ? cropRes.data.map(mapCrop) : seedCrops);
-      setOrders(orderRes.data ? orderRes.data.map(mapOrder) : seedOrders);
-      setRequests(requestRes.data ? requestRes.data.map(mapRequest) : seedRequests);
+      const cropRows = Array.isArray(cropRes.data) ? (cropRes.data as CropRow[]) : [];
+      const orderRows = Array.isArray(orderRes.data) ? (orderRes.data as OrderRow[]) : [];
+      const requestRows = Array.isArray(requestRes.data) ? (requestRes.data as TransportRequestRow[]) : [];
+
+      setCrops(dedupeById(cropRows.length ? cropRows.map(mapCrop) : seedCrops));
+      setOrders(dedupeById(orderRows.length ? orderRows.map(mapOrder) : seedOrders));
+      setRequests(dedupeById(requestRows.length ? requestRows.map(mapRequest) : seedRequests));
     } catch (error) {
       console.warn("Failed to fetch backend app data", error);
-      setCrops(seedCrops);
-      setOrders(seedOrders);
-      setRequests(seedRequests);
+      setCrops(dedupeById(seedCrops));
+      setOrders(dedupeById(seedOrders));
+      setRequests(dedupeById(seedRequests));
     }
   }, []);
 
@@ -758,11 +780,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           image: c.image,
           status: "available",
         };
-        const { data, error } = await supabase.from<CropRow>("crops").insert(payload).select("*").single();
+        const { data, error } = await getSupabaseTable("crops").insert(payload).select("*").single();
         if (error || !data) {
           throw error ?? new Error("Failed to add crop");
         }
-        setCrops((prev) => [mapCrop(data), ...prev]);
+        setCrops((prev) => dedupeById([mapCrop(data as unknown as CropRow), ...prev]));
       },
       orders,
       buyCrop: async (crop) => {
@@ -780,21 +802,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
           delivery: "preparing",
           date: new Date().toISOString().slice(0, 10),
         };
-        const { data, error } = await supabase.from<OrderRow>("orders").insert(orderPayload).select("*").single();
+        const { data, error } = await getSupabaseTable("orders").insert(orderPayload).select("*").single();
         if (error || !data) {
           throw error ?? new Error("Failed to place order");
         }
-        setOrders((prev) => [mapOrder(data), ...prev]);
-        await supabase
-          .from<CropRow>("crops")
+        setOrders((prev) => dedupeById([mapOrder(data as unknown as OrderRow), ...prev]));
+        await getSupabaseTable("crops")
           .update({ status: "sold" })
           .eq("id", crop.id);
         setCrops((prev) => prev.map((item) => (item.id === crop.id ? { ...item, status: "sold" } : item)));
       },
       requests,
       setRequestStatus: async (id, status) => {
-        const { data, error } = await supabase
-          .from<TransportRequestRow>("transport_requests")
+        const { data, error } = await getSupabaseTable("transport_requests")
           .update({ status })
           .eq("id", id)
           .select("*")
@@ -802,7 +822,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (error || !data) {
           throw error ?? new Error("Failed to update request");
         }
-        setRequests((prev) => prev.map((r) => (r.id === id ? mapRequest(data) : r)));
+        setRequests((prev) => prev.map((r) => (r.id === id ? mapRequest(data as unknown as TransportRequestRow) : r)));
       },
       addRequest: async (r) => {
         if (!user) throw new Error("Not authenticated");
@@ -821,15 +841,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
           farmer_phone: r.farmerPhone,
           dealer_phone: r.dealerPhone,
         };
-        const { data, error } = await supabase
-          .from<TransportRequestRow>("transport_requests")
+        const { data, error } = await getSupabaseTable("transport_requests")
           .insert(payload)
           .select("*")
           .single();
         if (error || !data) {
           throw error ?? new Error("Failed to add request");
         }
-        setRequests((prev) => [mapRequest(data), ...prev]);
+        setRequests((prev) => dedupeById([mapRequest(data as unknown as TransportRequestRow), ...prev]));
       },
       notifications,
       pushNotification,
