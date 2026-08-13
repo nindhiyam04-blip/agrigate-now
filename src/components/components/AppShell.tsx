@@ -4,7 +4,7 @@
  * and the shared footer.
  */
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type ReactNode, type ComponentType } from "react";
 import {
   Bell,
   Info,
@@ -25,7 +25,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useApp } from "@/lib/app-store";
 import { cn } from "@/lib/utils";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout, t, lang, setLang, dark, toggleDark, notifications, markAllRead } = useApp();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -221,13 +221,13 @@ function MenuLink({
   onNavigate,
 }: {
   to: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   label: string;
   onNavigate: () => void;
 }) {
   return (
     <Link
-      to={to}
+      to={to as any}
       onClick={onNavigate}
       className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-primary/10 hover:text-primary"
     >
