@@ -10,6 +10,7 @@
     "lint": "npm --prefix farm-connect-frontend run lint"
   },
   "devDependencies": {
-    "concurrently": "^10.0.4"
+    "concurrently": "^10.0.4",
+    "typescript": "^5.4.2"
   }
 }

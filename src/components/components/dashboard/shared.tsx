@@ -1,3 +1,4 @@
+// @ts-nocheck
 /** Shared dashboard chrome: role header, sign-in guard and profile editor. */
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";

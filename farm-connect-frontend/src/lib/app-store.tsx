@@ -32,6 +32,50 @@ type BackendUser = {
   role: Role;
 };
 
+export interface FarmerProfileData {
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
+  farmSizeAcres: number;
+  primaryCrops: string[];
+}
+
+export interface DealerProfileData {
+  fullName: string;
+  businessName: string;
+  email: string;
+  phone: string;
+  gstin: string;
+  tradeRegion: string;
+}
+
+export interface DriverLocationInfo {
+  latitude: number;
+  longitude: number;
+  currentAddress: string;
+  isLiveTracking: boolean;
+  lastUpdatedAt: string;
+}
+
+export interface DriverProfileData {
+  fullName: string;
+  email: string;
+  phone: string;
+  vehicleNumber: string;
+  vehicleType: string;
+  capacity: string;
+  govtIdType: string;
+  govtIdNumber: string;
+  govtIdProofUrl: string;
+  licenseNumber: string;
+  licenseExpiry: string;
+  licenseProofUrl: string;
+  isVerified: boolean;
+  verificationStatus: "pending" | "verified" | "rejected";
+  location: DriverLocationInfo;
+}
+
 export interface SessionUser {
   id: string;
   name: string;
@@ -40,6 +84,10 @@ export interface SessionUser {
   role: Role;
   location: string;
   avatar: string;
+  isVerified: boolean;
+  farmerProfile?: FarmerProfileData;
+  dealerProfile?: DealerProfileData;
+  driverProfile?: DriverProfileData;
 }
 
 type CropRow = {
@@ -211,7 +259,64 @@ function inferRoleFromEmail(email: string): Role {
   return "farmer";
 }
 
+function buildDefaultFarmerProfile(name: string, email: string, phone: string): FarmerProfileData {
+  return {
+    fullName: name,
+    email,
+    phone,
+    location: "Thanjavur, Tamil Nadu",
+    farmSizeAcres: 12,
+    primaryCrops: ["Paddy (Ponni Rice)", "Tomato", "Sugarcane"],
+  };
+}
+
+function buildDefaultDealerProfile(name: string, email: string, phone: string): DealerProfileData {
+  return {
+    fullName: name,
+    businessName: name.includes("Traders") || name.includes("Mills") ? name : `${name} Wholesale Corp`,
+    email,
+    phone,
+    gstin: "33AAAAA0000A1Z5",
+    tradeRegion: "Cauvery Delta & Central TN",
+  };
+}
+
+function buildDefaultDriverProfile(name: string, email: string, phone: string, metadata?: Record<string, unknown>): DriverProfileData {
+  const isVerified = typeof metadata?.isVerified === "boolean" ? metadata.isVerified : true;
+  return {
+    fullName: name,
+    email,
+    phone: phone || "+91 98400 99887",
+    vehicleNumber: typeof metadata?.vehicleNumber === "string" ? metadata.vehicleNumber : "TN 45 BX 8821",
+    vehicleType: typeof metadata?.vehicleType === "string" ? metadata.vehicleType : "Tata 407 — Open body",
+    capacity: typeof metadata?.capacity === "string" ? metadata.capacity : "4 ton",
+    govtIdType: typeof metadata?.govtIdType === "string" ? metadata.govtIdType : "Aadhaar Card",
+    govtIdNumber: typeof metadata?.govtIdNumber === "string" ? metadata.govtIdNumber : "XXXX-XXXX-9912",
+    govtIdProofUrl: typeof metadata?.govtIdProofUrl === "string" ? metadata.govtIdProofUrl : "aadhaar_proof_verified.pdf",
+    licenseNumber: typeof metadata?.licenseNumber === "string" ? metadata.licenseNumber : "TN45 20180012345",
+    licenseExpiry: typeof metadata?.licenseExpiry === "string" ? metadata.licenseExpiry : "2029-12-31",
+    licenseProofUrl: typeof metadata?.licenseProofUrl === "string" ? metadata.licenseProofUrl : "driving_license_verified.pdf",
+    isVerified,
+    verificationStatus: !isVerified
+      ? "pending"
+      : metadata?.verificationStatus === "pending" || metadata?.verificationStatus === "rejected"
+      ? (metadata.verificationStatus as any)
+      : "verified",
+    location: {
+      latitude: 10.7867,
+      longitude: 79.1378,
+      currentAddress: "Thanjavur Highway, TN",
+      isLiveTracking: true,
+      lastUpdatedAt: new Date().toISOString(),
+    },
+  };
+}
+
 function mapBackendUser(user: BackendUser): SessionUser {
+  const farmerProfile = user.role === "farmer" ? buildDefaultFarmerProfile(user.fullName, user.email, user.mobile) : undefined;
+  const dealerProfile = user.role === "dealer" ? buildDefaultDealerProfile(user.fullName, user.email, user.mobile) : undefined;
+  const driverProfile = user.role === "driver" ? buildDefaultDriverProfile(user.fullName, user.email, user.mobile) : undefined;
+
   return {
     id: user.id,
     name: user.fullName,
@@ -220,6 +325,10 @@ function mapBackendUser(user: BackendUser): SessionUser {
     role: user.role,
     location: "Thanjavur, Tamil Nadu",
     avatar: user.fullName.slice(0, 2).toUpperCase(),
+    isVerified: true,
+    farmerProfile,
+    dealerProfile,
+    driverProfile,
   };
 }
 
@@ -286,15 +395,27 @@ function createSessionUser(user: User): SessionUser {
     typeof metadata.fullName === "string" && metadata.fullName.trim()
       ? metadata.fullName.trim()
       : defaultNames[role];
+  const phone = typeof metadata.phone === "string" ? metadata.phone : "+91 98400 11223";
+  const email = user.email ?? `${role}@agrilink.demo`;
+
+  const farmerProfile = role === "farmer" ? buildDefaultFarmerProfile(name, email, phone) : undefined;
+  const dealerProfile = role === "dealer" ? buildDefaultDealerProfile(name, email, phone) : undefined;
+  const driverProfile = role === "driver" ? buildDefaultDriverProfile(name, email, phone, metadata) : undefined;
+
+  const isVerified = role === "driver" ? Boolean(driverProfile?.isVerified) : true;
 
   return {
     id: user.id,
     name,
-    email: user.email ?? `${role}@agrilink.demo`,
-    phone: typeof metadata.phone === "string" ? metadata.phone : "+91 98400 11223",
+    email,
+    phone,
     role,
     location: typeof metadata.location === "string" ? metadata.location : "Thanjavur, Tamil Nadu",
     avatar: name.slice(0, 2).toUpperCase(),
+    isVerified,
+    farmerProfile,
+    dealerProfile,
+    driverProfile,
   };
 }
 
@@ -318,6 +439,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-07-12",
     location: "Thanjavur, TN",
     farmer: "Murugan S.",
+    farmerId: "farmer-murugan",
     phone: "+91 98400 11223",
     rating: 4.8,
     image: CROP_IMAGES[0],
@@ -333,6 +455,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-07-20",
     location: "Hosur, TN",
     farmer: "Lakshmi R.",
+    farmerId: "farmer-lakshmi",
     phone: "+91 90031 55480",
     rating: 4.6,
     image: CROP_IMAGES[1],
@@ -348,6 +471,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-07-18",
     location: "Theni, TN",
     farmer: "Arun K.",
+    farmerId: "farmer-arun",
     phone: "+91 88254 77109",
     rating: 4.9,
     image: CROP_IMAGES[2],
@@ -363,6 +487,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-08-02",
     location: "Tiruvannamalai, TN",
     farmer: "Selvi M.",
+    farmerId: "farmer-selvi",
     phone: "+91 99529 30012",
     rating: 4.4,
     image: CROP_IMAGES[3],
@@ -378,6 +503,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-07-28",
     location: "Erode, TN",
     farmer: "Bala P.",
+    farmerId: "farmer-bala",
     phone: "+91 93441 20087",
     rating: 4.2,
     image: CROP_IMAGES[4],
@@ -393,6 +519,7 @@ const seedCrops: Crop[] = [
     harvestDate: "2026-07-15",
     location: "Perambalur, TN",
     farmer: "Kavitha N.",
+    farmerId: "farmer-kavitha",
     phone: "+91 87540 66321",
     rating: 4.7,
     image: CROP_IMAGES[5],
@@ -536,6 +663,9 @@ interface AppState {
   login: (email: string, password: string, role?: Role) => Promise<Role>;
   logout: () => Promise<void>;
   updateProfile: (patch: Partial<SessionUser>) => Promise<void>;
+  updateDriverLocation: (lat: number, lng: number, address?: string, isLive?: boolean) => Promise<void>;
+  updateDriverProfile: (patch: Partial<DriverProfileData>) => Promise<void>;
+  verifyDriverAccount: () => Promise<void>;
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (key: string) => string;
@@ -571,9 +701,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const loadAppData = useCallback(async () => {
     try {
       const [cropRes, orderRes, requestRes] = await Promise.all([
-        supabase.from<CropRow>("crops").select("*").order("created_at", { ascending: false }),
-        supabase.from<OrderRow>("orders").select("*").order("created_at", { ascending: false }),
-        supabase.from<TransportRequestRow>("transport_requests").select("*").order("created_at", { ascending: false }),
+        (supabase as any).from("crops").select("*").order("created_at", { ascending: false }),
+        (supabase as any).from("orders").select("*").order("created_at", { ascending: false }),
+        (supabase as any).from("transport_requests").select("*").order("created_at", { ascending: false }),
       ]);
 
       const isSchemaMissing = (error: unknown) => {
@@ -606,9 +736,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      setCrops(dedupeById(cropRes.data ? cropRes.data.map(mapCrop) : seedCrops));
-      setOrders(dedupeById(orderRes.data ? orderRes.data.map(mapOrder) : seedOrders));
-      setRequests(dedupeById(requestRes.data ? requestRes.data.map(mapRequest) : seedRequests));
+      const cropRows = Array.isArray(cropRes.data) ? (cropRes.data as CropRow[]) : [];
+      const orderRows = Array.isArray(orderRes.data) ? (orderRes.data as OrderRow[]) : [];
+      const requestRows = Array.isArray(requestRes.data) ? (requestRes.data as TransportRequestRow[]) : [];
+
+      setCrops(dedupeById(cropRows.length ? cropRows.map(mapCrop) : seedCrops));
+      setOrders(dedupeById(orderRows.length ? orderRows.map(mapOrder) : seedOrders));
+      setRequests(dedupeById(requestRows.length ? requestRows.map(mapRequest) : seedRequests));
     } catch (error) {
       console.warn("Failed to fetch backend app data", error);
       setCrops(dedupeById(seedCrops));
@@ -786,11 +920,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           image: c.image,
           status: "available",
         };
-        const { data, error } = await supabase.from<CropRow>("crops").insert(payload).select("*").single();
+        const { data, error } = await (supabase as any).from("crops").insert(payload).select("*").single();
         if (error || !data) {
           throw error ?? new Error("Failed to add crop");
         }
-        setCrops((prev) => dedupeById([mapCrop(data), ...prev]));
+        setCrops((prev) => dedupeById([mapCrop(data as unknown as CropRow), ...prev]));
       },
       orders,
       buyCrop: async (crop) => {
@@ -808,21 +942,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
           delivery: "preparing",
           date: new Date().toISOString().slice(0, 10),
         };
-        const { data, error } = await supabase.from<OrderRow>("orders").insert(orderPayload).select("*").single();
+        const { data, error } = await (supabase as any).from("orders").insert(orderPayload).select("*").single();
         if (error || !data) {
           throw error ?? new Error("Failed to place order");
         }
-        setOrders((prev) => dedupeById([mapOrder(data), ...prev]));
-        await supabase
-          .from<CropRow>("crops")
+        setOrders((prev) => dedupeById([mapOrder(data as unknown as OrderRow), ...prev]));
+        await (supabase as any)
+          .from("crops")
           .update({ status: "sold" })
           .eq("id", crop.id);
         setCrops((prev) => prev.map((item) => (item.id === crop.id ? { ...item, status: "sold" } : item)));
       },
       requests,
       setRequestStatus: async (id, status) => {
-        const { data, error } = await supabase
-          .from<TransportRequestRow>("transport_requests")
+        const { data, error } = await (supabase as any)
+          .from("transport_requests")
           .update({ status })
           .eq("id", id)
           .select("*")
@@ -830,7 +964,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (error || !data) {
           throw error ?? new Error("Failed to update request");
         }
-        setRequests((prev) => prev.map((r) => (r.id === id ? mapRequest(data) : r)));
+        setRequests((prev) => prev.map((r) => (r.id === id ? mapRequest(data as unknown as TransportRequestRow) : r)));
       },
       addRequest: async (r) => {
         if (!user) throw new Error("Not authenticated");
@@ -849,15 +983,47 @@ export function AppProvider({ children }: { children: ReactNode }) {
           farmer_phone: r.farmerPhone,
           dealer_phone: r.dealerPhone,
         };
-        const { data, error } = await supabase
-          .from<TransportRequestRow>("transport_requests")
+        const { data, error } = await (supabase as any)
+          .from("transport_requests")
           .insert(payload)
           .select("*")
           .single();
         if (error || !data) {
           throw error ?? new Error("Failed to add request");
         }
-        setRequests((prev) => dedupeById([mapRequest(data), ...prev]));
+        setRequests((prev) => dedupeById([mapRequest(data as unknown as TransportRequestRow), ...prev]));
+      },
+      updateDriverLocation: async (lat, lng, address, isLive = true) => {
+        if (!user || user.role !== "driver" || !user.driverProfile) return;
+        const updatedLocation: DriverLocationInfo = {
+          latitude: lat,
+          longitude: lng,
+          currentAddress: address ?? user.driverProfile.location.currentAddress,
+          isLiveTracking: isLive,
+          lastUpdatedAt: new Date().toISOString(),
+        };
+        const updatedProfile: DriverProfileData = {
+          ...user.driverProfile,
+          location: updatedLocation,
+        };
+        setUser({ ...user, driverProfile: updatedProfile });
+      },
+      updateDriverProfile: async (patch) => {
+        if (!user || user.role !== "driver" || !user.driverProfile) return;
+        const updatedProfile: DriverProfileData = {
+          ...user.driverProfile,
+          ...patch,
+        };
+        setUser({ ...user, driverProfile: updatedProfile, name: patch.fullName ?? user.name, phone: patch.phone ?? user.phone });
+      },
+      verifyDriverAccount: async () => {
+        if (!user || user.role !== "driver" || !user.driverProfile) return;
+        const verifiedProfile: DriverProfileData = {
+          ...user.driverProfile,
+          isVerified: true,
+          verificationStatus: "verified",
+        };
+        setUser({ ...user, isVerified: true, driverProfile: verifiedProfile });
       },
       notifications,
       pushNotification,

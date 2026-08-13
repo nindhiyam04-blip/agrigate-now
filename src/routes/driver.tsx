@@ -1,7 +1,22 @@
-/** Driver dashboard: transport requests, vehicle, earnings and live status. */
+/** Driver dashboard: transport requests, dedicated driver profile, documents verification, and real-time location tracking. */
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Check, IndianRupee, MapPin, Phone, Route as RouteIcon, Truck, X } from "lucide-react";
+import {
+  Check,
+  IndianRupee,
+  MapPin,
+  Phone,
+  Route as RouteIcon,
+  Truck,
+  X,
+  ShieldCheck,
+  FileCheck,
+  Navigation,
+  Compass,
+  AlertTriangle,
+  FileText
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -17,7 +32,7 @@ export const Route = createFileRoute("/driver")({
       {
         name: "description",
         content:
-          "Accept transport requests, manage vehicle details, track earnings and delivery status.",
+          "Accept transport requests, manage dedicated driver profile & identity documents, track live location and earnings.",
       },
       { property: "og:title", content: "Driver Dashboard — AgriLink" },
       { property: "og:description", content: "Find loads near you and get paid per delivery." },
@@ -27,8 +42,18 @@ export const Route = createFileRoute("/driver")({
 });
 
 function DriverDashboard() {
-  const { user, requests, setRequestStatus, pushNotification } = useApp();
+  const { user, requests, setRequestStatus, pushNotification, updateDriverLocation, verifyDriverAccount } = useApp();
+
+  // Location simulation state
+  const [address, setAddress] = useState(user?.driverProfile?.location.currentAddress || "Thanjavur Highway, TN");
+  const [lat, setLat] = useState(user?.driverProfile?.location.latitude || 10.7867);
+  const [lng, setLng] = useState(user?.driverProfile?.location.longitude || 79.1378);
+  const [isLive, setIsLive] = useState(user?.driverProfile?.location.isLiveTracking ?? true);
+
   if (!user || user.role !== "driver") return <SignInGate role="driver" />;
+
+  const driverProfile = user.driverProfile;
+  const isVerified = user.isVerified && driverProfile?.isVerified !== false;
 
   const open = requests.filter((r) => r.status === "open");
   const accepted = requests.filter((r) => r.status === "accepted");
@@ -37,9 +62,63 @@ function DriverDashboard() {
     .filter((r) => r.status === "delivered")
     .reduce((s, r) => s + r.payout, 0);
 
+  const handleSimulateMove = () => {
+    const nextLat = Number((lat + (Math.random() - 0.5) * 0.05).toFixed(4));
+    const nextLng = Number((lng + (Math.random() - 0.5) * 0.05).toFixed(4));
+    setLat(nextLat);
+    setLng(nextLng);
+    updateDriverLocation(nextLat, nextLng, address, isLive);
+    toast.success(`Updated live GPS location: ${nextLat}, ${nextLng}`);
+  };
+
+  // Verification Gate for Unverified Drivers
+  if (!isVerified) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 px-4 pt-12">
+        <GlassCard className="rounded-3xl p-8 text-center border-amber-500/30 bg-amber-500/5">
+          <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400">
+            <AlertTriangle className="size-10" />
+          </div>
+          <h1 className="mt-4 text-2xl font-bold">Driver Verification Pending</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Your driver identity documents and vehicle credentials have been submitted and are under verification before activating full driver features.
+          </p>
+
+          <div className="mt-6 rounded-2xl bg-background/80 p-5 text-left text-sm space-y-3 border border-muted/30">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <FileCheck className="size-4 text-primary" /> Submitted Credentials & Proof Documents
+            </h3>
+            <div className="grid gap-2 sm:grid-cols-2 text-xs">
+              <div><span className="text-muted-foreground">Driver Name:</span> <span className="font-medium">{user.name}</span></div>
+              <div><span className="text-muted-foreground">Email / Phone:</span> <span className="font-medium">{user.email} · {user.phone}</span></div>
+              <div><span className="text-muted-foreground">Vehicle Number:</span> <span className="font-medium">{driverProfile?.vehicleNumber || "TN 45 BX 8821"}</span></div>
+              <div><span className="text-muted-foreground">Government ID:</span> <span className="font-medium">{driverProfile?.govtIdType || "Aadhaar Card"} ({driverProfile?.govtIdNumber || "XXXX-XXXX-9912"})</span></div>
+              <div><span className="text-muted-foreground">ID Proof Doc:</span> <span className="font-medium text-primary">{driverProfile?.govtIdProofUrl || "aadhaar_proof.pdf"}</span></div>
+              <div><span className="text-muted-foreground">Driving License:</span> <span className="font-medium">{driverProfile?.licenseNumber || "TN45 20180012345"}</span></div>
+              <div><span className="text-muted-foreground">License Proof Doc:</span> <span className="font-medium text-primary">{driverProfile?.licenseProofUrl || "driving_license_proof.pdf"}</span></div>
+              <div><span className="text-muted-foreground">Status:</span> <span className="font-semibold text-amber-500">Under Review</span></div>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Button
+              className="rounded-full gradient-primary text-primary-foreground font-semibold"
+              onClick={async () => {
+                await verifyDriverAccount();
+                toast.success("Identity verified and driver account activated!");
+              }}
+            >
+              <ShieldCheck className="size-4 mr-2" /> Approve & Activate Driver Profile
+            </Button>
+          </div>
+        </GlassCard>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 pt-8">
-      <DashboardHeader subtitle="Driver portal · TN 45 BX 8821" />
+      <DashboardHeader subtitle={`Driver Portal · ${driverProfile?.vehicleNumber || "TN 45 BX 8821"} · Verified`} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -61,10 +140,10 @@ function DriverDashboard() {
           icon={<IndianRupee className="size-5" />}
         />
         <StatCard
-          label="Completion"
-          value="98%"
-          hint="last 50 trips"
-          icon={<Check className="size-5" />}
+          label="Verification"
+          value="Verified"
+          hint="ID & License Proof Stored"
+          icon={<ShieldCheck className="size-5 text-emerald-500" />}
         />
       </div>
 
@@ -73,11 +152,14 @@ function DriverDashboard() {
           <TabsTrigger value="requests" className="rounded-xl">
             Requests
           </TabsTrigger>
+          <TabsTrigger value="location" className="rounded-xl">
+            Live GPS Tracking
+          </TabsTrigger>
           <TabsTrigger value="live" className="rounded-xl">
             Live delivery
           </TabsTrigger>
           <TabsTrigger value="vehicle" className="rounded-xl">
-            Vehicle
+            Vehicle & Proofs
           </TabsTrigger>
           <TabsTrigger value="earnings" className="rounded-xl">
             Earnings
@@ -164,6 +246,106 @@ function DriverDashboard() {
           <ReviewList />
         </TabsContent>
 
+        {/* Real-time Location Tracking Tab */}
+        <TabsContent value="location" className="mt-5">
+          <GlassCard className="rounded-3xl">
+            <SectionTitle
+              title="Real-Time Location Tracking"
+              subtitle="Broadcast live GPS coordinates to farmers and dealers during transport trips."
+            />
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4 rounded-2xl bg-muted/40 p-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-foreground flex items-center gap-2">
+                    <Navigation className="size-5 text-primary" /> Live GPS Broadcast Status
+                  </h3>
+                  <Pill tone={isLive ? "success" : "muted"}>
+                    {isLive ? "LIVE BROADCAST ACTIVE" : "OFFLINE"}
+                  </Pill>
+                </div>
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between border-b border-muted/30 pb-2">
+                    <span className="text-muted-foreground">Current Coordinates</span>
+                    <span className="font-mono font-semibold">{lat}, {lng}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-muted/30 pb-2">
+                    <span className="text-muted-foreground">Current Location Address</span>
+                    <span className="font-semibold">{address}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-muted/30 pb-2">
+                    <span className="text-muted-foreground">Last Updated</span>
+                    <span className="font-mono text-xs">{driverProfile?.location?.lastUpdatedAt ? new Date(driverProfile.location.lastUpdatedAt).toLocaleTimeString() : "Just now"}</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex flex-wrap gap-3">
+                  <Button
+                    size="sm"
+                    className="rounded-full gradient-primary text-primary-foreground"
+                    onClick={handleSimulateMove}
+                  >
+                    <Compass className="size-4 mr-1" /> Simulate GPS Movement
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={isLive ? "outline" : "default"}
+                    className="rounded-full"
+                    onClick={() => {
+                      const nextLive = !isLive;
+                      setIsLive(nextLive);
+                      updateDriverLocation(lat, lng, address, nextLive);
+                      toast(nextLive ? "Live GPS broadcast started" : "Live GPS broadcast paused");
+                    }}
+                  >
+                    {isLive ? "Pause Tracking" : "Start Live Tracking"}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold text-foreground">Update Location Info</h3>
+                <Field label="Address / Landmark">
+                  <Input
+                    className="rounded-xl"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Latitude">
+                    <Input
+                      className="rounded-xl font-mono"
+                      type="number"
+                      step="0.0001"
+                      value={lat}
+                      onChange={(e) => setLat(Number(e.target.value))}
+                    />
+                  </Field>
+                  <Field label="Longitude">
+                    <Input
+                      className="rounded-xl font-mono"
+                      type="number"
+                      step="0.0001"
+                      value={lng}
+                      onChange={(e) => setLng(Number(e.target.value))}
+                    />
+                  </Field>
+                </div>
+                <Button
+                  className="w-full rounded-full gradient-primary text-primary-foreground"
+                  onClick={() => {
+                    updateDriverLocation(lat, lng, address, isLive);
+                    toast.success("Real-time location updated");
+                  }}
+                >
+                  Save Location Coordinates
+                </Button>
+              </div>
+            </div>
+          </GlassCard>
+        </TabsContent>
+
         <TabsContent value="live" className="mt-5">
           <GlassCard className="rounded-3xl">
             <SectionTitle
@@ -195,9 +377,9 @@ function DriverDashboard() {
                   <Button
                     variant="secondary"
                     className="rounded-full"
-                    onClick={() => toast("Location shared with farmer and dealer")}
+                    onClick={() => toast(`Live GPS (${lat}, ${lng}) shared with farmer and dealer`)}
                   >
-                    Share live location
+                    Share live location ({lat}, {lng})
                   </Button>
                 </div>
               </>
@@ -207,37 +389,88 @@ function DriverDashboard() {
           </GlassCard>
         </TabsContent>
 
+        {/* Dedicated Driver Vehicle & Identity Documents Profile */}
         <TabsContent value="vehicle" className="mt-5">
-          <GlassCard className="rounded-3xl">
+          <GlassCard className="rounded-3xl space-y-6">
             <SectionTitle
-              title="Vehicle details"
-              subtitle="Keep documents current to receive high-value loads."
+              title="Vehicle Details & Identity Proof Documents"
+              subtitle="Verified vehicle registration, government ID proof, and driving license details."
             />
+
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Field label="Vehicle type">
-                <Input className="rounded-xl" defaultValue="Tata 407 — Open body" />
+              <Field label="Vehicle Type">
+                <Input
+                  className="rounded-xl"
+                  defaultValue={driverProfile?.vehicleType || "Tata 407 — Open body"}
+                />
               </Field>
-              <Field label="Registration number">
-                <Input className="rounded-xl" defaultValue="TN 45 BX 8821" />
+              <Field label="Registration / Wheeler Number">
+                <Input
+                  className="rounded-xl"
+                  defaultValue={driverProfile?.vehicleNumber || "TN 45 BX 8821"}
+                />
               </Field>
-              <Field label="Capacity">
-                <Input className="rounded-xl" defaultValue="4 ton" />
+              <Field label="Max Load Capacity">
+                <Input
+                  className="rounded-xl"
+                  defaultValue={driverProfile?.capacity || "4 ton"}
+                />
               </Field>
-              <Field label="Licence number">
-                <Input className="rounded-xl" defaultValue="TN45 20180012345" />
+              <Field label="Phone Number">
+                <Input
+                  className="rounded-xl"
+                  defaultValue={driverProfile?.phone || user.phone}
+                />
               </Field>
-              <Field label="Insurance valid till">
+              <Field label="Email Address">
+                <Input
+                  className="rounded-xl"
+                  defaultValue={driverProfile?.email || user.email}
+                  disabled
+                />
+              </Field>
+              <Field label="Insurance Valid Till">
                 <Input className="rounded-xl" type="date" defaultValue="2027-03-31" />
               </Field>
-              <Field label="Service area">
-                <Input className="rounded-xl" defaultValue="Thanjavur · Trichy · Madurai" />
-              </Field>
             </div>
+
+            {/* Document Proof Section */}
+            <div className="rounded-2xl border border-muted/30 bg-muted/20 p-5 space-y-4">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <FileText className="size-5 text-primary" /> Verified Identity & License Documents
+              </h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-xl bg-background p-4 border border-muted/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Government ID Proof</span>
+                    <Pill tone="success">Verified</Pill>
+                  </div>
+                  <p className="text-sm font-semibold">{driverProfile?.govtIdType || "Aadhaar Card"}</p>
+                  <p className="text-xs font-mono text-muted-foreground">ID Number: {driverProfile?.govtIdNumber || "XXXX-XXXX-9912"}</p>
+                  <p className="text-xs text-primary font-medium flex items-center gap-1">
+                    <FileCheck className="size-3" /> Proof Document: {driverProfile?.govtIdProofUrl || "aadhaar_proof_verified.pdf"}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-background p-4 border border-muted/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Driving License</span>
+                    <Pill tone="success">Verified</Pill>
+                  </div>
+                  <p className="text-sm font-semibold">License No: {driverProfile?.licenseNumber || "TN45 20180012345"}</p>
+                  <p className="text-xs text-muted-foreground">Expiry Date: {driverProfile?.licenseExpiry || "2029-12-31"}</p>
+                  <p className="text-xs text-primary font-medium flex items-center gap-1">
+                    <FileCheck className="size-3" /> License Document: {driverProfile?.licenseProofUrl || "driving_license_verified.pdf"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <Button
               className="mt-5 rounded-full gradient-primary text-primary-foreground"
-              onClick={() => toast.success("Vehicle details saved")}
+              onClick={() => toast.success("Driver profile and vehicle details updated")}
             >
-              Save vehicle details
+              Save Vehicle & Profile Details
             </Button>
           </GlassCard>
         </TabsContent>

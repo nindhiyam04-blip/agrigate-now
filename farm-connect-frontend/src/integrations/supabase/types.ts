@@ -1,5 +1,58 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+export interface FarmerProfile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  location: string;
+  farm_size_acres?: number;
+  primary_crops?: string[];
+  created_at: string;
+}
+
+export interface DealerProfile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  business_name: string;
+  email: string;
+  phone: string;
+  gstin?: string;
+  trade_region: string;
+  created_at: string;
+}
+
+export interface LocationTrackingInfo {
+  latitude: number;
+  longitude: number;
+  current_address: string;
+  is_live_tracking: boolean;
+  last_updated_at: string;
+}
+
+export interface DriverProfile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  vehicle_number: string;
+  vehicle_type: string;
+  capacity: string;
+  govt_id_type: string;
+  govt_id_number: string;
+  govt_id_proof_url: string;
+  license_number: string;
+  license_expiry: string;
+  license_proof_url: string;
+  is_verified: boolean;
+  verification_status: "pending" | "verified" | "rejected";
+  location: LocationTrackingInfo;
+  created_at: string;
+}
+
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
@@ -8,7 +61,21 @@ export type Database = {
   };
   public: {
     Tables: {
-      [_ in never]: never;
+      farmer_profiles: {
+        Row: FarmerProfile;
+        Insert: Partial<FarmerProfile> & Pick<FarmerProfile, "user_id" | "full_name" | "email">;
+        Update: Partial<FarmerProfile>;
+      };
+      dealer_profiles: {
+        Row: DealerProfile;
+        Insert: Partial<DealerProfile> & Pick<DealerProfile, "user_id" | "full_name" | "email">;
+        Update: Partial<DealerProfile>;
+      };
+      driver_profiles: {
+        Row: DriverProfile;
+        Insert: Partial<DriverProfile> & Pick<DriverProfile, "user_id" | "full_name" | "email" | "vehicle_number" | "govt_id_number" | "license_number">;
+        Update: Partial<DriverProfile>;
+      };
     };
     Views: {
       [_ in never]: never;

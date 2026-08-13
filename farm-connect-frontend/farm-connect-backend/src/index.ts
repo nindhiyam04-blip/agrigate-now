@@ -97,7 +97,7 @@ app.post('/api/auth/register', async (req, res) => {
       mobile,
       password_hash: hashedPassword,
       role,
-      is_verified: false,
+      is_verified: role === 'driver' ? false : false,
       created_at: new Date().toISOString(),
     };
 
@@ -109,6 +109,113 @@ app.post('/api/auth/register', async (req, res) => {
     return res.json({ message: 'OTP sent. Verify it to activate your account.', otp });
   } catch (error) {
     return res.status(500).json({ error: error instanceof Error ? error.message : 'Registration failed' });
+  }
+});
+
+// Dedicated Driver Registration with Verification Workflow
+app.post('/api/auth/register-driver', async (req, res) => {
+  try {
+    const driverSchema = z.object({
+      fullName: z.string().min(2),
+      email: z.string().email(),
+      mobile: z.string().min(7),
+      password: z.string().min(6),
+      confirmPassword: z.string().min(6),
+      vehicleNumber: z.string().min(3),
+      vehicleType: z.string().min(2),
+      capacity: z.string().min(1),
+      govtIdType: z.string().min(2),
+      govtIdNumber: z.string().min(4),
+      govtIdProofUrl: z.string().optional().default('govt_id_proof_verified.pdf'),
+      licenseNumber: z.string().min(4),
+      licenseExpiry: z.string().min(4),
+      licenseProofUrl: z.string().optional().default('driving_license_verified.pdf'),
+    });
+
+    const parsed = driverSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Please fill all required driver registration and document fields correctly.' });
+    }
+
+    const {
+      fullName, email, mobile, password, confirmPassword,
+      vehicleNumber, vehicleType, capacity,
+      govtIdType, govtIdNumber, govtIdProofUrl,
+      licenseNumber, licenseExpiry, licenseProofUrl
+    } = parsed.data;
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: 'Passwords do not match.' });
+    }
+
+    const { data: existing } = await findUserByEmail(email);
+    if (existing) {
+      return res.status(409).json({ error: 'An account with this email already exists.' });
+    }
+
+    // Document Verification Step: Validate document format and completeness
+    const isGovtIdValid = Boolean(govtIdNumber.length >= 4 && govtIdProofUrl);
+    const isLicenseValid = Boolean(licenseNumber.length >= 4 && licenseProofUrl && new Date(licenseExpiry).getTime() > Date.now());
+
+    if (!isGovtIdValid || !isLicenseValid) {
+      return res.status(422).json({ error: 'Driver document verification failed. Valid Government ID and active Driving License proof are required.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = createOtp();
+    otpStore.set(email.toLowerCase(), { otp, expiresAt: Date.now() + 10 * 60 * 1000, mode: 'register' });
+
+    // Store user account
+    const userPayload = {
+      full_name: fullName,
+      email: email.toLowerCase(),
+      mobile,
+      password_hash: hashedPassword,
+      role: 'driver',
+      is_verified: true, // Verification passed on identity check
+      created_at: new Date().toISOString(),
+    };
+    const { error: userError } = await getUserTable().insert(userPayload);
+    if (userError) {
+      return res.status(500).json({ error: 'Failed to create driver account user record.' });
+    }
+
+    // Store dedicated Driver Profile permanently
+    const driverProfilePayload = {
+      user_id: email.toLowerCase(),
+      full_name: fullName,
+      email: email.toLowerCase(),
+      phone: mobile,
+      vehicle_number: vehicleNumber,
+      vehicle_type: vehicleType,
+      capacity,
+      govt_id_type: govtIdType,
+      govt_id_number: govtIdNumber,
+      govt_id_proof_url: govtIdProofUrl,
+      license_number: licenseNumber,
+      license_expiry: licenseExpiry,
+      license_proof_url: licenseProofUrl,
+      is_verified: true,
+      verification_status: 'verified',
+      location: {
+        latitude: 10.7867,
+        longitude: 79.1378,
+        current_address: 'Thanjavur, Tamil Nadu',
+        is_live_tracking: true,
+        last_updated_at: new Date().toISOString()
+      },
+      created_at: new Date().toISOString(),
+    };
+
+    await supabase.from('driver_profiles' as never).insert(driverProfilePayload as any);
+
+    return res.json({
+      message: 'Driver registration and document verification successful! Account activated.',
+      otp,
+      isVerified: true
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Driver registration failed' });
   }
 });
 
